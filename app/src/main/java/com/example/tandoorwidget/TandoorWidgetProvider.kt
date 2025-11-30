@@ -49,6 +49,12 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 updateErrorView(context, appWidgetId, errorMessage)
             }
+        } else if ("com.example.tandoorwidget.ACTION_REFRESH_WIDGET" == intent.action) {
+            val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+            if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.calendar_view)
+            }
         }
     }
 
@@ -70,8 +76,8 @@ class TandoorWidgetProvider : AppWidgetProvider() {
 
         // Set up the refresh button
         val intent = Intent(context, TandoorWidgetProvider::class.java)
-        intent.action = "android.appwidget.action.APPWIDGET_UPDATE"
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(appWidgetId))
+        intent.action = "com.example.tandoorwidget.ACTION_REFRESH_WIDGET"
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             appWidgetId,
