@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
     android:orientation="vertical"
     android:padding="8dp">
 
@@ -24,9 +25,19 @@
             android:src="@android:drawable/ic_menu_rotate" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/debug_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ready"
+        android:textColor="#FF0000"
+        android:textSize="10sp"
+        android:visibility="visible" />
+
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <GridView
             android:id="@+id/calendar_view"

@@ -7,7 +7,7 @@ import retrofit2.http.Query
 import retrofit2.http.Header
 
 interface TandoorApiService {
-    @GET("api/meal_plan/")
+    @GET("api/meal-plan/")
     fun getMealPlan(
         @Header("Authorization") authorization: String,
         @Query("from_date") fromDate: String,
