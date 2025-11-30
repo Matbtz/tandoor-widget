@@ -42,7 +42,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             return
         }
 
-        sendLogBroadcast("Fetching from: $tandoorUrl")
+        sendLogBroadcast("URL: $tandoorUrl")
 
         try {
             val apiService = ApiClient.getApiService(tandoorUrl)
@@ -52,10 +52,6 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
             // Find the start date (Saturday)
             // If today is Saturday, we want today. If today is Sunday, we want yesterday (Saturday).
-            // Calendar.SATURDAY is 7.
-            // If today is Monday (2), we subtract (2 - 7) = -5 days? No, we want previous Saturday.
-            // (day + 7 - 7) % 7 gives offset from Saturday?
-            // Simple approach: go back until it's Saturday
             while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
                 calendar.add(Calendar.DAY_OF_WEEK, -1)
             }
@@ -69,11 +65,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             val fromDate = dates.first()
             val toDate = dates.last()
 
+            sendLogBroadcast("Req: $fromDate to $toDate")
+
             val response = apiService.getMealPlan(authorization, fromDate, toDate).execute()
             if (response.isSuccessful) {
                 val mealPlans = response.body()?.results
                 val count = mealPlans?.size ?: 0
-                sendLogBroadcast("Success: Found $count meals")
+                sendLogBroadcast("Success: $count meals")
 
                 val mealPlansByDate = mealPlans?.associateBy { it.from_date.substring(0, 10) } ?: emptyMap()
                 dailyMeals.clear()
@@ -82,10 +80,10 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 })
             } else {
                 val errorBody = response.errorBody()?.string() ?: "Unknown error"
-                sendErrorBroadcast("API fail: ${response.code()} - $errorBody")
+                sendErrorBroadcast("Err: ${response.code()} - $errorBody")
             }
         } catch (e: Exception) {
-            sendErrorBroadcast("Exception: ${e.message}", e)
+            sendErrorBroadcast("Ex: ${e.message}", e)
         }
     }
 
