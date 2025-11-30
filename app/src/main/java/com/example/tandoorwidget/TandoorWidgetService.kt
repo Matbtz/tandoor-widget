@@ -32,40 +32,62 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     override fun onDataSetChanged() {
+        sendLogBroadcast("Starting data refresh...")
         val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val apiKey = sharedPrefs.getString("api_key_$appWidgetId", "") ?: ""
         val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "") ?: ""
-        val apiService = ApiClient.getApiService(tandoorUrl)
-        val authorization = "Token $apiKey"
 
-        val calendar = Calendar.getInstance()
-        
-        // Find the last Saturday
-        calendar.add(Calendar.DAY_OF_WEEK, -(calendar.get(Calendar.DAY_OF_WEEK) - Calendar.SATURDAY))
-        
-        val dates = (0..6).map {
-            val date = sdf.format(calendar.time)
-            calendar.add(Calendar.DAY_OF_WEEK, 1)
-            date
+        if (tandoorUrl.isBlank() || apiKey.isBlank()) {
+            sendLogBroadcast("Error: Missing URL or API Key")
+            return
         }
-        
-        val fromDate = dates.first()
-        val toDate = dates.last()
+
+        sendLogBroadcast("Fetching from: $tandoorUrl")
 
         try {
+            val apiService = ApiClient.getApiService(tandoorUrl)
+            val authorization = "Token $apiKey"
+
+            val calendar = Calendar.getInstance()
+
+            // Find the last Saturday
+            calendar.add(Calendar.DAY_OF_WEEK, -(calendar.get(Calendar.DAY_OF_WEEK) - Calendar.SATURDAY))
+
+            val dates = (0..6).map {
+                val date = sdf.format(calendar.time)
+                calendar.add(Calendar.DAY_OF_WEEK, 1)
+                date
+            }
+
+            val fromDate = dates.first()
+            val toDate = dates.last()
+
             val response = apiService.getMealPlan(authorization, fromDate, toDate).execute()
             if (response.isSuccessful) {
-                val mealPlansByDate = response.body()?.results?.associateBy { it.from_date.substring(0, 10) } ?: emptyMap()
+                val mealPlans = response.body()?.results
+                val count = mealPlans?.size ?: 0
+                sendLogBroadcast("Success: Found $count meals")
+
+                val mealPlansByDate = mealPlans?.associateBy { it.from_date.substring(0, 10) } ?: emptyMap()
                 dailyMeals.clear()
                 dailyMeals.addAll(dates.map { date ->
                     Pair(date, mealPlansByDate[date])
                 })
             } else {
-                sendErrorBroadcast("API call failed with response code: ${response.code()}")
+                val errorBody = response.errorBody()?.string() ?: "Unknown error"
+                sendErrorBroadcast("API fail: ${response.code()} - $errorBody")
             }
         } catch (e: Exception) {
-            sendErrorBroadcast("Exception during API call", e)
+            sendErrorBroadcast("Exception: ${e.message}", e)
         }
+    }
+
+    private fun sendLogBroadcast(message: String) {
+        Log.d(TAG, message)
+        val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        intent.putExtra("log_message", message)
+        context.sendBroadcast(intent)
     }
 
     private fun sendErrorBroadcast(message: String, throwable: Throwable? = null) {

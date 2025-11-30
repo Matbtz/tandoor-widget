@@ -58,11 +58,20 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         }
     }
 
+    private fun updateDebugView(context: Context, appWidgetId: Int, message: String?) {
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
+        views.setTextViewText(R.id.debug_view, message ?: "...")
+        appWidgetManager.partiallyUpdateAppWidget(appWidgetId, views)
+    }
+
     private fun updateErrorView(context: Context, appWidgetId: Int, errorMessage: String?) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
         views.setViewVisibility(R.id.error_view, View.VISIBLE)
         views.setTextViewText(R.id.error_view, errorMessage ?: "Failed to load data.")
+        // Also update debug view
+        views.setTextViewText(R.id.debug_view, "Error: $errorMessage")
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
