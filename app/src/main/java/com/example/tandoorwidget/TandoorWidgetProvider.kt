@@ -52,8 +52,15 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         } else if ("com.example.tandoorwidget.ACTION_REFRESH_WIDGET" == intent.action) {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                updateDebugView(context, appWidgetId, "Requesting refresh...")
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.calendar_view)
+            }
+        } else if ("com.example.tandoorwidget.ACTION_WIDGET_LOG" == intent.action) {
+            val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+            val logMessage = intent.getStringExtra("log_message")
+            if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                updateDebugView(context, appWidgetId, logMessage)
             }
         }
     }

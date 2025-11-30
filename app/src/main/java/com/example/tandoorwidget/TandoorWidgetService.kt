@@ -25,7 +25,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     private val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
     private val TAG = "TandoorWidget"
     private val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-    private val dayOfWeekFormat = SimpleDateFormat("EEE", Locale.US)
+    private val dayDisplayFormat = SimpleDateFormat("EEE dd/MM", Locale.US)
 
     override fun onCreate() {
         // Not needed for this implementation
@@ -50,8 +50,15 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
             val calendar = Calendar.getInstance()
 
-            // Find the last Saturday
-            calendar.add(Calendar.DAY_OF_WEEK, -(calendar.get(Calendar.DAY_OF_WEEK) - Calendar.SATURDAY))
+            // Find the start date (Saturday)
+            // If today is Saturday, we want today. If today is Sunday, we want yesterday (Saturday).
+            // Calendar.SATURDAY is 7.
+            // If today is Monday (2), we subtract (2 - 7) = -5 days? No, we want previous Saturday.
+            // (day + 7 - 7) % 7 gives offset from Saturday?
+            // Simple approach: go back until it's Saturday
+            while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+                calendar.add(Calendar.DAY_OF_WEEK, -1)
+            }
 
             val dates = (0..6).map {
                 val date = sdf.format(calendar.time)
@@ -112,10 +119,16 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         
         val calendar = Calendar.getInstance()
         calendar.time = sdf.parse(date)
-        val dayOfWeek = dayOfWeekFormat.format(calendar.time).toUpperCase(Locale.US)
+        val dayOfWeek = dayDisplayFormat.format(calendar.time)
 
         remoteViews.setTextViewText(R.id.day_of_week, dayOfWeek)
-        remoteViews.setTextViewText(R.id.meal, mealPlan?.recipe?.name ?: "---")
+
+        if (mealPlan != null) {
+            val mealText = "${mealPlan.meal_type_name}: ${mealPlan.recipe.name}"
+            remoteViews.setTextViewText(R.id.meal, mealText)
+        } else {
+            remoteViews.setTextViewText(R.id.meal, "---")
+        }
         
         return remoteViews
     }

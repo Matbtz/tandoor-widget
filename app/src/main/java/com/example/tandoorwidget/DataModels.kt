@@ -9,7 +9,8 @@ data class MealPlan(
     val title: String,
     val recipe: Recipe,
     val from_date: String,
-    val meal_type: MealType
+    val meal_type: MealType,
+    val meal_type_name: String
 )
 
 data class Recipe(
