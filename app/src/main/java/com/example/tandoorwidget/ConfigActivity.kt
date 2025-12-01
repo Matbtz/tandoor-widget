@@ -68,16 +68,20 @@ class ConfigActivity : Activity() {
         }
 
         // Register broadcast receivers for logs
-        val logFilter = IntentFilter().apply {
-            addAction("com.example.tandoorwidget.ACTION_WIDGET_LOG")
-            addAction("com.example.tandoorwidget.ACTION_WIDGET_ERROR")
+        try {
+            val logFilter = IntentFilter().apply {
+                addAction("com.example.tandoorwidget.ACTION_WIDGET_LOG")
+                addAction("com.example.tandoorwidget.ACTION_WIDGET_ERROR")
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(logReceiver, logFilter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(logReceiver, logFilter)
+            }
+            isReceiverRegistered = true
+        } catch (e: Exception) {
+            appendLog("[ERROR] Failed to register log receiver: ${e.message}")
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(logReceiver, logFilter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(logReceiver, logFilter)
-        }
-        isReceiverRegistered = true
 
         clearLogsButton.setOnClickListener {
             logs.clear()
@@ -163,6 +167,8 @@ class ConfigActivity : Activity() {
     }
     
     private fun testApiConnection(baseUrl: String, apiKey: String) {
+        // Use a separate thread for network operations
+        // Note: In production, consider using coroutines or ExecutorService for better lifecycle management
         Thread {
             try {
                 val apiService = ApiClient.getApiService(baseUrl)

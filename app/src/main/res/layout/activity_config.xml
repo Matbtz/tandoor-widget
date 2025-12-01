@@ -52,7 +52,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_marginTop="8dp"
-        android:background="#F0F0F0"
+        android:background="@color/debug_log_background"
         android:padding="8dp">
 
         <TextView

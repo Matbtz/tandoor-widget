@@ -88,7 +88,9 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 mealPlans?.forEachIndexed { index, meal ->
                     val rawDate = meal.from_date
                     val parsedDate = rawDate.substring(0, 10)
-                    sendLogBroadcast("Meal #${index + 1}: '${meal.recipe.name}' - Raw date: '$rawDate' -> Parsed: '$parsedDate'")
+                    // Sanitize recipe name for logging (truncate and remove newlines)
+                    val recipeName = meal.recipe.name.replace("\n", " ").take(50)
+                    sendLogBroadcast("Meal #${index + 1}: '${recipeName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate'")
                 }
 
                 val mealPlansByDate = mealPlans?.associateBy { it.from_date.substring(0, 10) } ?: emptyMap()
@@ -99,7 +101,8 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 dailyMeals.addAll(dates.map { date ->
                     val meal = mealPlansByDate[date]
                     if (meal != null) {
-                        sendLogBroadcast("✓ Matched date '$date' to meal: ${meal.recipe.name}")
+                        val recipeName = meal.recipe.name.replace("\n", " ").take(50)
+                        sendLogBroadcast("✓ Matched date '$date' to meal: $recipeName")
                     } else {
                         sendLogBroadcast("✗ No match for date '$date'")
                     }
