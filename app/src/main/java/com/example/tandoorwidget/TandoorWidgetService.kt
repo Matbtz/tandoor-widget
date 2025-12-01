@@ -44,23 +44,24 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
         sendLogBroadcast("URL: $tandoorUrl")
 
+        // Calculate dates first so we can show them even on error
+        val calendar = Calendar.getInstance()
+
+        // Find the start date (Saturday)
+        // If today is Saturday, we want today. If today is Sunday, we want yesterday (Saturday).
+        while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+            calendar.add(Calendar.DATE, -1)
+        }
+
+        val dates = (0..6).map {
+            val date = sdf.format(calendar.time)
+            calendar.add(Calendar.DATE, 1)
+            date
+        }
+
         try {
             val apiService = ApiClient.getApiService(tandoorUrl)
             val authorization = "Token $apiKey"
-
-            val calendar = Calendar.getInstance()
-
-            // Find the start date (Saturday)
-            // If today is Saturday, we want today. If today is Sunday, we want yesterday (Saturday).
-            while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
-                calendar.add(Calendar.DAY_OF_WEEK, -1)
-            }
-
-            val dates = (0..6).map {
-                val date = sdf.format(calendar.time)
-                calendar.add(Calendar.DAY_OF_WEEK, 1)
-                date
-            }
 
             val fromDate = dates.first()
             val toDate = dates.last()
@@ -81,9 +82,15 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             } else {
                 val errorBody = response.errorBody()?.string() ?: "Unknown error"
                 sendErrorBroadcast("Err: ${response.code()} - $errorBody")
+                // Still show dates even on error
+                dailyMeals.clear()
+                dailyMeals.addAll(dates.map { date -> Pair(date, null) })
             }
         } catch (e: Exception) {
             sendErrorBroadcast("Ex: ${e.message}", e)
+            // Still show dates even on exception
+            dailyMeals.clear()
+            dailyMeals.addAll(dates.map { date -> Pair(date, null) })
         }
     }
 
@@ -116,7 +123,12 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         val (date, mealPlan) = dailyMeals[position]
         
         val calendar = Calendar.getInstance()
-        calendar.time = sdf.parse(date)
+        val parsedDate = sdf.parse(date)
+        if (parsedDate != null) {
+            calendar.time = parsedDate
+        } else {
+            Log.e(TAG, "Failed to parse date: $date")
+        }
         val dayOfWeek = dayDisplayFormat.format(calendar.time)
 
         remoteViews.setTextViewText(R.id.day_of_week, dayOfWeek)

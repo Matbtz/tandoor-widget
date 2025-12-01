@@ -119,5 +119,8 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         views.setRemoteAdapter(R.id.calendar_view, serviceIntent)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
+        
+        // Trigger initial data load
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.calendar_view)
     }
 }
