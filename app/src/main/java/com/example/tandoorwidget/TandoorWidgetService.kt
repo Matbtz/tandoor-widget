@@ -123,7 +123,12 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         val (date, mealPlan) = dailyMeals[position]
         
         val calendar = Calendar.getInstance()
-        calendar.time = sdf.parse(date) ?: calendar.time
+        val parsedDate = sdf.parse(date)
+        if (parsedDate != null) {
+            calendar.time = parsedDate
+        } else {
+            Log.e(TAG, "Failed to parse date: $date")
+        }
         val dayOfWeek = dayDisplayFormat.format(calendar.time)
 
         remoteViews.setTextViewText(R.id.day_of_week, dayOfWeek)

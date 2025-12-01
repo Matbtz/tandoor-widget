@@ -41,7 +41,8 @@ class ConfigActivity : Activity() {
             var tandoorUrl = tandoorUrlEditText.text.toString().trim()
             val apiKey = apiKeyEditText.text.toString().trim()
 
-            // Normalize URL: remove /api/meal-plan/ if present, ensure trailing slash
+            // Normalize URL: remove /api/meal-plan/ if present at the end ($ anchor ensures only end-of-string matches)
+            // This prevents double paths like /api/meal-plan/api/meal-plan/ when Retrofit adds the endpoint
             tandoorUrl = tandoorUrl.replace(Regex("/api/meal-plan/?$"), "")
             if (!tandoorUrl.endsWith("/")) {
                 tandoorUrl += "/"
