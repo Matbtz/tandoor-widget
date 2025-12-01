@@ -23,6 +23,20 @@ class ConfigActivity : Activity() {
             AppWidgetManager.INVALID_APPWIDGET_ID
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
+        val sharedPrefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+
+        // Pre-fill existing values if present
+        if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            val existingUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
+            val existingKey = sharedPrefs.getString("api_key_$appWidgetId", "")
+            if (!existingUrl.isNullOrEmpty()) {
+                tandoorUrlEditText.setText(existingUrl)
+            }
+            if (!existingKey.isNullOrEmpty()) {
+                apiKeyEditText.setText(existingKey)
+            }
+        }
+
         saveButton.setOnClickListener {
             var tandoorUrl = tandoorUrlEditText.text.toString().trim()
             val apiKey = apiKeyEditText.text.toString().trim()

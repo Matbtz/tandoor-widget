@@ -102,6 +102,17 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.refresh_button, pendingIntent)
 
+        // Set up config click on title
+        val configIntent = Intent(context, ConfigActivity::class.java)
+        configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        val configPendingIntent = PendingIntent.getActivity(
+            context,
+            appWidgetId,
+            configIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_title, configPendingIntent)
+
         // Set up the remote adapter
         val serviceIntent = Intent(context, TandoorWidgetService::class.java)
         serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
