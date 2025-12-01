@@ -31,7 +31,7 @@ Added OkHttp logging interceptor that logs:
 
 This is logged to Android Logcat with tag `TandoorApiClient` for easy filtering.
 
-**Dependency added**: `com.squareup.okhttp3:logging-interceptor:4.9.0`
+**Dependency added**: `com.squareup.okhttp3:logging-interceptor:3.14.9` (compatible with Retrofit 2.9.0)
 
 ### 3. Real-time Debug Log Viewer (ConfigActivity.kt)
 

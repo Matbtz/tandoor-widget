@@ -162,13 +162,16 @@ class ConfigActivity : Activity() {
     private fun appendLog(message: String) {
         runOnUiThread {
             logs.append(message).append("\n")
+            // Note: For very large logs (100+ lines), consider using a RecyclerView or
+            // limiting the log buffer size to avoid performance issues
             debugLogsTextView.text = logs.toString()
         }
     }
     
     private fun testApiConnection(baseUrl: String, apiKey: String) {
         // Use a separate thread for network operations
-        // Note: In production, consider using coroutines or ExecutorService for better lifecycle management
+        // Note: Using raw Thread for simplicity in this debug/config activity
+        // For production code with frequent network calls, consider ExecutorService or coroutines
         Thread {
             try {
                 val apiService = ApiClient.getApiService(baseUrl)
