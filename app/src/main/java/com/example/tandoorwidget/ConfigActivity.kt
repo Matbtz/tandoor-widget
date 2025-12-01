@@ -41,6 +41,8 @@ class ConfigActivity : Activity() {
             var tandoorUrl = tandoorUrlEditText.text.toString().trim()
             val apiKey = apiKeyEditText.text.toString().trim()
 
+            // Normalize URL: remove /api/meal-plan/ if present, ensure trailing slash
+            tandoorUrl = tandoorUrl.replace(Regex("/api/meal-plan/?$"), "")
             if (!tandoorUrl.endsWith("/")) {
                 tandoorUrl += "/"
             }

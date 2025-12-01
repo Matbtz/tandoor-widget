@@ -53,12 +53,12 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             // Find the start date (Saturday)
             // If today is Saturday, we want today. If today is Sunday, we want yesterday (Saturday).
             while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
-                calendar.add(Calendar.DAY_OF_WEEK, -1)
+                calendar.add(Calendar.DATE, -1)
             }
 
             val dates = (0..6).map {
                 val date = sdf.format(calendar.time)
-                calendar.add(Calendar.DAY_OF_WEEK, 1)
+                calendar.add(Calendar.DATE, 1)
                 date
             }
 
@@ -116,7 +116,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         val (date, mealPlan) = dailyMeals[position]
         
         val calendar = Calendar.getInstance()
-        calendar.time = sdf.parse(date)
+        calendar.time = sdf.parse(date) ?: calendar.time
         val dayOfWeek = dayDisplayFormat.format(calendar.time)
 
         remoteViews.setTextViewText(R.id.day_of_week, dayOfWeek)
