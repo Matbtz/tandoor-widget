@@ -46,6 +46,7 @@ class ConfigActivity : Activity() {
         val testApiButton = findViewById<Button>(R.id.test_api_button)
         debugLogsTextView = findViewById(R.id.debug_logs)
         val clearLogsButton = findViewById<Button>(R.id.clear_logs_button)
+        val doneButton = findViewById<Button>(R.id.done_button)
 
         appWidgetId = intent?.extras?.getInt(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
@@ -76,10 +77,18 @@ class ConfigActivity : Activity() {
         } else {
             registerReceiver(logReceiver, logFilter)
         }
+        isReceiverRegistered = true
 
         clearLogsButton.setOnClickListener {
             logs.clear()
             debugLogsTextView.text = "Logs cleared. Refresh widget to see new logs..."
+        }
+
+        doneButton.setOnClickListener {
+            val resultValue = Intent()
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+            setResult(RESULT_OK, resultValue)
+            finish()
         }
 
         testApiButton.setOnClickListener {
@@ -101,7 +110,7 @@ class ConfigActivity : Activity() {
             logs.clear()
             logs.append("=== Testing API Connection ===\n")
             logs.append("Base URL: $tandoorUrl\n")
-            logs.append("API Key: ${apiKey.take(8)}...\n\n")
+            logs.append("API Key: ***${apiKey.length} characters***\n\n")
             debugLogsTextView.text = logs.toString()
 
             testApiConnection(tandoorUrl, apiKey)
@@ -139,7 +148,10 @@ class ConfigActivity : Activity() {
             val appWidgetManager = AppWidgetManager.getInstance(this)
             TandoorWidgetProvider().onUpdate(this, appWidgetManager, intArrayOf(appWidgetId))
 
-            Toast.makeText(this, "Configuration saved! Check logs below.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Configuration saved! Widget updating... Check logs below.", Toast.LENGTH_LONG).show()
+            
+            // Note: We don't finish() here anymore to allow viewing logs
+            // The user can press back or home button when done viewing logs
         }
     }
     
@@ -209,12 +221,17 @@ class ConfigActivity : Activity() {
         }.start()
     }
     
+    private var isReceiverRegistered = false
+    
     override fun onDestroy() {
         super.onDestroy()
-        try {
-            unregisterReceiver(logReceiver)
-        } catch (e: Exception) {
-            // Receiver may not have been registered
+        if (isReceiverRegistered) {
+            try {
+                unregisterReceiver(logReceiver)
+                isReceiverRegistered = false
+            } catch (e: IllegalArgumentException) {
+                // Receiver was already unregistered
+            }
         }
     }
 }

@@ -72,7 +72,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             val toDate = dates.last()
 
             sendLogBroadcast("API Request: GET api/meal-plan/?from_date=$fromDate&to_date=$toDate")
-            sendLogBroadcast("Authorization: Token ${apiKey.take(8)}...")
+            sendLogBroadcast("Authorization: Token ***${apiKey.length} characters***")
 
             val response = apiService.getMealPlan(authorization, fromDate, toDate).execute()
             
