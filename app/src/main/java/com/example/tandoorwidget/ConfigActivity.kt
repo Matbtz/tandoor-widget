@@ -217,9 +217,10 @@ class ConfigActivity : Activity() {
                     if (count > 0) {
                         appendLog("First few meal plans:")
                         mealPlans?.take(3)?.forEachIndexed { index, meal ->
-                            appendLog("${index + 1}. ${meal.recipe.name}")
+                            val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title)
+                            appendLog("${index + 1}. $displayName")
                             appendLog("   from_date: ${meal.from_date}")
-                            appendLog("   Parsed date: ${meal.from_date.substring(0, 10)}")
+                            appendLog("   Parsed date: ${MealPlanUtils.safeParseDate(meal.from_date)}")
                             appendLog("   Meal type: ${meal.meal_type_name}")
                         }
                     } else {
