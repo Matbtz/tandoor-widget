@@ -214,12 +214,17 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
             val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
             
-            if (tandoorUrl.isNotEmpty()) {
-                val recipeUrl = "$tandoorUrl/recipe/${mealPlan.recipe.id}/"
-                
-                val fillInIntent = Intent(Intent.ACTION_VIEW)
-                fillInIntent.data = android.net.Uri.parse(recipeUrl)
-                remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+            if (tandoorUrl.isNotEmpty() && mealPlan.recipe.id > 0) {
+                try {
+                    val recipeUrl = "$tandoorUrl/recipe/${mealPlan.recipe.id}/"
+                    val uri = android.net.Uri.parse(recipeUrl)
+                    
+                    val fillInIntent = Intent(Intent.ACTION_VIEW)
+                    fillInIntent.data = uri
+                    remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to create recipe URL for meal ${mealPlan.id}", e)
+                }
             }
         } else {
             remoteViews.setTextViewText(R.id.meal, "---")
