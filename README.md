@@ -63,11 +63,11 @@ If you see "---" for meals even though you have planned meals:
 
 This project is configured to automatically build and release signed APK files via GitHub Actions when you push a version tag.
 
-### Configuration des secrets GitHub
+### Configuring GitHub Secrets
 
 Before creating releases, you need to configure the signing secrets in your GitHub repository.
 
-#### 1. Générer un keystore (si vous n'en avez pas)
+#### 1. Generate a Keystore (if you don't have one)
 
 ```bash
 keytool -genkey -v -keystore release-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias release
@@ -78,7 +78,7 @@ Follow the prompts to set:
 - Key password (you'll need this as `KEY_PASSWORD`)
 - Your name and organization details
 
-#### 2. Encoder le keystore en base64
+#### 2. Encode the Keystore to Base64
 
 On Linux/Mac:
 ```bash
@@ -90,7 +90,7 @@ On Windows (PowerShell):
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("release-keystore.jks")) | Out-File keystore-base64.txt
 ```
 
-#### 3. Configurer les secrets dans GitHub
+#### 3. Configure Secrets in GitHub
 
 Go to your repository: **Settings > Secrets and variables > Actions > New repository secret**
 
@@ -100,7 +100,7 @@ Add these secrets:
 - `KEY_ALIAS`: `release` (or the alias you specified when creating the keystore)
 - `KEY_PASSWORD`: Key password you used when creating the keystore
 
-### Créer une release
+### Creating a Release
 
 Once secrets are configured, creating a release is simple:
 
