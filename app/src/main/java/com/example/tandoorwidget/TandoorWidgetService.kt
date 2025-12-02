@@ -54,18 +54,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     private fun updateFlattenedMeals() {
         flattenedMeals.clear()
         for ((date, meals) in dailyMeals) {
-            val dayDisplay = try {
-                val parsedDate = sdf.parse(date)
-                if (parsedDate != null) {
-                    dayDisplayFormat.format(parsedDate)
-                } else {
-                    Log.e(TAG, "Failed to parse date: $date")
-                    date // Fallback to showing the raw date
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Exception parsing date: $date", e)
-                date // Fallback to showing the raw date
-            }
+            val dayDisplay = MealPlanUtils.formatDateForDisplay(date, sdf, dayDisplayFormat)
             
             if (meals.isEmpty()) {
                 // Show day with no meals
@@ -135,13 +124,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 // Debug: Log each meal plan's date
                 mealPlans?.forEachIndexed { index, meal ->
                     val rawDate = meal.from_date
-                    val parsedDate = rawDate.substring(0, 10)
-                    // Sanitize recipe name for logging (truncate and remove newlines)
-                    val recipeName = meal.recipe.name.replace("\n", " ").take(50)
-                    sendLogBroadcast("Meal #${index + 1}: '${recipeName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate'")
+                    val parsedDate = MealPlanUtils.safeParseDate(rawDate)
+                    // Sanitize display name for logging (truncate and remove newlines)
+                    val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title).replace("\n", " ").take(50)
+                    sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate'")
                 }
 
-                val mealPlansByDate = mealPlans?.groupBy { it.from_date.substring(0, 10) } ?: emptyMap()
+                val mealPlansByDate = mealPlans?.groupBy { MealPlanUtils.safeParseDate(it.from_date) } ?: emptyMap()
                 
                 sendLogBroadcast("Meal plans by date map keys: ${mealPlansByDate.keys.joinToString(", ")}")
                 
@@ -149,8 +138,10 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 dailyMeals.addAll(dates.map { date ->
                     val meals = mealPlansByDate[date] ?: emptyList()
                     if (meals.isNotEmpty()) {
-                        val recipeNames = meals.joinToString(", ") { it.recipe.name.replace("\n", " ").take(30) }
-                        sendLogBroadcast("✓ Matched date '$date' to ${meals.size} meal(s): $recipeNames")
+                        val displayNames = meals.joinToString(", ") { 
+                            MealPlanUtils.getDisplayName(it.recipe, it.title).replace("\n", " ").take(30) 
+                        }
+                        sendLogBroadcast("✓ Matched date '$date' to ${meals.size} meal(s): $displayNames")
                     } else {
                         sendLogBroadcast("✗ No match for date '$date'")
                     }
@@ -208,33 +199,36 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         remoteViews.setTextViewText(R.id.day_of_week, dayDisplay)
 
         if (mealPlan != null) {
-            // Truncate recipe name
-            val recipeName = mealPlan.recipe.name.take(MAX_RECIPE_NAME_LENGTH).let { 
-                if (mealPlan.recipe.name.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
+            // Get display name using utility (handles null recipe)
+            val displayName = MealPlanUtils.getDisplayName(mealPlan.recipe, mealPlan.title)
+            val truncatedName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
+                if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
             }
-            val mealText = "${mealPlan.meal_type_name}: $recipeName"
+            val mealText = "${mealPlan.meal_type_name}: $truncatedName"
             remoteViews.setTextViewText(R.id.meal, mealText)
             
-            // Set up click intent to open recipe
-            val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
-            
-            // Validate URL and recipe ID before creating intent
-            if (!tandoorUrl.isNullOrEmpty() && 
-                (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://")) &&
-                mealPlan.recipe.id > 0) {
-                try {
-                    val recipeUrl = "$tandoorUrl/recipe/${mealPlan.recipe.id}/"
-                    val uri = android.net.Uri.parse(recipeUrl)
-                    
-                    // Ensure URI is valid
-                    if (uri != null && uri.scheme != null) {
-                        val fillInIntent = Intent(Intent.ACTION_VIEW)
-                        fillInIntent.data = uri
-                        remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+            // Only set up click intent if recipe is not null
+            val recipeId = MealPlanUtils.getRecipeUrl(mealPlan.recipe)
+            if (recipeId != null) {
+                val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+                val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
+                
+                // Validate URL before creating intent
+                if (!tandoorUrl.isNullOrEmpty() && 
+                    (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://"))) {
+                    try {
+                        val recipeUrl = "$tandoorUrl/recipe/$recipeId/"
+                        val uri = android.net.Uri.parse(recipeUrl)
+                        
+                        // Ensure URI is valid
+                        if (uri != null && uri.scheme != null) {
+                            val fillInIntent = Intent(Intent.ACTION_VIEW)
+                            fillInIntent.data = uri
+                            remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to create recipe URL for meal ${mealPlan.id}", e)
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to create recipe URL for meal ${mealPlan.id}", e)
                 }
             }
         } else {
