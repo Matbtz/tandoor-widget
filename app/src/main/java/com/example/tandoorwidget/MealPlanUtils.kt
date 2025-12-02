@@ -10,6 +10,13 @@ import java.util.Locale
 object MealPlanUtils {
     private const val TAG = "MealPlanUtils"
     
+    // Thread-local date format for safe concurrent usage
+    private val dateFormat = ThreadLocal.withInitial {
+        SimpleDateFormat("yyyy-MM-dd", Locale.US).apply {
+            isLenient = false
+        }
+    }
+    
     /**
      * Get display name for a meal plan entry.
      * Returns recipe name if available, otherwise falls back to title, or "Untitled" as last resort.
@@ -57,10 +64,8 @@ object MealPlanUtils {
             // Try to extract just the date part (first 10 characters for YYYY-MM-DD)
             if (rawDate.length >= 10) {
                 val datePart = rawDate.substring(0, 10)
-                // Validate it's a proper date format
-                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                sdf.isLenient = false
-                sdf.parse(datePart) // Will throw if invalid
+                // Validate it's a proper date format using the thread-local date formatter
+                dateFormat.get()!!.parse(datePart) // Will throw if invalid
                 datePart
             } else {
                 Log.w(TAG, "Date string too short: '$rawDate', using as-is")
