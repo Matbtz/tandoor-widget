@@ -87,8 +87,12 @@ jobs:
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git config --global user.name "github-actions[bot]"
             
-            # Push the tag using REPO_PAT (will trigger workflow via push event)
-            git push https://${GITHUB_TOKEN}@github.com/${{ github.repository }}.git "refs/tags/${TAG_NAME}" || {
+            # Configure remote URL with authentication using credential helper to avoid token exposure
+            git config --global credential.helper store
+            echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+            
+            # Push the tag using authenticated remote (will trigger workflow via push event)
+            git push origin "refs/tags/${TAG_NAME}" || {
               echo "✗ Fallback git push failed"
               echo "Please check:"
               echo "  1. REPO_PAT secret exists and has 'repo' scope"

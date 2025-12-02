@@ -26,10 +26,8 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       
-      - name: Setup Gradle
+      - name: Setup Gradle (validate wrapper)
         uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: wrapper
       
       - name: Decode Keystore
         env:
@@ -58,13 +56,8 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -f "gradlew" ]; then
-            echo "Building with Gradle wrapper..."
-            ./gradlew assembleRelease --no-daemon --stacktrace
-          else
-            echo "Building with Gradle from gradle-build-action..."
-            gradle assembleRelease --no-daemon --stacktrace
-          fi
+          # Build using wrapper - gradle-build-action ensures it works even if JAR is missing
+          ./gradlew assembleRelease --no-daemon --stacktrace
       
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
