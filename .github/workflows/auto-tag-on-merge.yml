@@ -39,7 +39,7 @@ jobs:
           
           echo "Creating tag ${TAG_NAME} for commit ${COMMIT_SHA}"
           
-          # Configure git with PAT for authentication
+          # Configure git
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
@@ -47,12 +47,11 @@ jobs:
           git tag "${TAG_NAME}" "${COMMIT_SHA}"
           echo "✓ Tag ${TAG_NAME} created locally"
           
-          # Configure remote URL with authentication using credential helper to avoid token exposure
-          git config --global credential.helper store
-          echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+          # Configure remote URL with authentication token
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
           
           # Push the tag to remote (this will automatically trigger the release workflow via push event)
-          git push origin "refs/tags/${TAG_NAME}" || {
+          git push origin "${TAG_NAME}" || {
             echo "✗ Failed to push tag"
             echo "Please check:"
             echo "  1. REPO_PAT secret exists and has 'repo' scope"
