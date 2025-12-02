@@ -37,31 +37,69 @@ jobs:
           # Get the commit SHA for the merge commit
           COMMIT_SHA="${{ github.event.pull_request.merge_commit_sha }}"
           
+          echo "Creating tag ${TAG_NAME} for commit ${COMMIT_SHA}"
+          
           # Create tag via GitHub API using REPO_PAT
-          curl -X POST \
+          HTTP_CODE=$(curl -w "%{http_code}" -o /tmp/tag_response.json -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/${{ github.repository }}/git/refs" \
-            -d "{\"ref\":\"refs/tags/${TAG_NAME}\",\"sha\":\"${COMMIT_SHA}\"}" \
-            --fail-with-body
+            -d "{\"ref\":\"refs/tags/${TAG_NAME}\",\"sha\":\"${COMMIT_SHA}\"}")
           
-          echo "Tag ${TAG_NAME} created successfully via API"
+          echo "Tag creation HTTP response code: ${HTTP_CODE}"
+          echo "Tag creation response body:"
+          cat /tmp/tag_response.json
+          
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✓ Tag ${TAG_NAME} created successfully via API"
+          else
+            echo "✗ Failed to create tag via API (HTTP ${HTTP_CODE})"
+            exit 1
+          fi
       
-      - name: Trigger release workflow
+      - name: Trigger release workflow (with fallback)
         env:
           TAG_NAME: ${{ steps.generate_tag.outputs.tag_name }}
           GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
         run: |
-          set -e  # Exit on any error
+          echo "Attempting to trigger release workflow for tag ${TAG_NAME}"
           
-          # Trigger the release workflow via API using REPO_PAT
-          curl -X POST \
+          # Try to trigger the release workflow via API using REPO_PAT
+          HTTP_CODE=$(curl -w "%{http_code}" -o /tmp/dispatch_response.json -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows/release.yml/dispatches" \
-            -d "{\"ref\":\"${TAG_NAME}\"}" \
-            --fail-with-body
+            -d "{\"ref\":\"${TAG_NAME}\"}")
           
-          echo "Release workflow triggered for tag ${TAG_NAME}"
+          echo "Workflow dispatch HTTP response code: ${HTTP_CODE}"
+          echo "Workflow dispatch response body:"
+          cat /tmp/dispatch_response.json
+          
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✓ Release workflow triggered successfully via API dispatch"
+          else
+            echo "⚠ Workflow dispatch failed (HTTP ${HTTP_CODE})"
+            echo "Attempting fallback: pushing tag via git to trigger workflow on push event"
+            
+            # Configure git with PAT for authentication
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "github-actions[bot]"
+            
+            # Configure remote URL with authentication using credential helper to avoid token exposure
+            git config --global credential.helper store
+            echo "https://${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+            
+            # Push the tag using authenticated remote (will trigger workflow via push event)
+            git push origin "refs/tags/${TAG_NAME}" || {
+              echo "✗ Fallback git push failed"
+              echo "Please check:"
+              echo "  1. REPO_PAT secret exists and has 'repo' scope"
+              echo "  2. REPO_PAT is authorized for SSO if required"
+              echo "  3. Token has workflow permissions"
+              exit 1
+            }
+            
+            echo "✓ Tag pushed via git - release workflow should trigger on push event"
+          fi
