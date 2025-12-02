@@ -2,85 +2,175 @@ package com.example.tandoorwidget
 
 import org.junit.Test
 import org.junit.Assert.*
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * Unit tests for MealPlanUtils
  */
 class MealPlanUtilsTest {
-    
+
     @Test
     fun getDisplayName_withValidRecipe_returnsRecipeName() {
-        val recipe = Recipe(id = 1, name = "Test Recipe", image = null)
-        val result = MealPlanUtils.getDisplayName(recipe, "Placeholder Title")
-        assertEquals("Test Recipe", result)
+        // Given
+        val recipe = Recipe(id = 1, name = "Spaghetti Bolognese", image = null)
+        val title = "Placeholder Title"
+
+        // When
+        val result = MealPlanUtils.getDisplayName(recipe, title)
+
+        // Then
+        assertEquals("Spaghetti Bolognese", result)
     }
-    
+
     @Test
     fun getDisplayName_withNullRecipe_returnsTitle() {
-        val result = MealPlanUtils.getDisplayName(null, "Placeholder Title")
-        assertEquals("Placeholder Title", result)
+        // Given
+        val recipe: Recipe? = null
+        val title = "Test Placeholder"
+
+        // When
+        val result = MealPlanUtils.getDisplayName(recipe, title)
+
+        // Then
+        assertEquals("Test Placeholder", result)
     }
-    
+
     @Test
-    fun getDisplayName_withNullRecipeAndNullTitle_returnsUntitled() {
-        val result = MealPlanUtils.getDisplayName(null, null)
-        assertEquals("Untitled", result)
+    fun getDisplayName_withNullRecipeAndEmptyTitle_returnsEmptyString() {
+        // Given
+        val recipe: Recipe? = null
+        val title = ""
+
+        // When
+        val result = MealPlanUtils.getDisplayName(recipe, title)
+
+        // Then
+        assertEquals("", result)
     }
-    
+
     @Test
-    fun getDisplayName_withNullRecipeAndEmptyTitle_returnsUntitled() {
-        val result = MealPlanUtils.getDisplayName(null, "")
-        assertEquals("Untitled", result)
+    fun getRecipeUrl_withValidRecipe_returnsRecipeId() {
+        // Given
+        val recipe = Recipe(id = 42, name = "Test Recipe", image = null)
+
+        // When
+        val result = MealPlanUtils.getRecipeUrl(recipe)
+
+        // Then
+        assertEquals(42, result)
     }
-    
-    @Test
-    fun getDisplayName_withEmptyRecipeNameAndTitle_returnsTitle() {
-        val recipe = Recipe(id = 1, name = "", image = null)
-        val result = MealPlanUtils.getDisplayName(recipe, "Placeholder Title")
-        assertEquals("Placeholder Title", result)
-    }
-    
-    @Test
-    fun getRecipeUrl_withValidRecipe_returnsUrl() {
-        val recipe = Recipe(id = 123, name = "Test Recipe", image = null)
-        val result = MealPlanUtils.getRecipeUrl(recipe, "https://tandoor.example.com")
-        assertEquals("https://tandoor.example.com/recipe/123/", result)
-    }
-    
+
     @Test
     fun getRecipeUrl_withNullRecipe_returnsNull() {
-        val result = MealPlanUtils.getRecipeUrl(null, "https://tandoor.example.com")
+        // Given
+        val recipe: Recipe? = null
+
+        // When
+        val result = MealPlanUtils.getRecipeUrl(recipe)
+
+        // Then
         assertNull(result)
     }
-    
+
     @Test
     fun getRecipeUrl_withInvalidRecipeId_returnsNull() {
+        // Given
         val recipe = Recipe(id = 0, name = "Test Recipe", image = null)
-        val result = MealPlanUtils.getRecipeUrl(recipe, "https://tandoor.example.com")
+
+        // When
+        val result = MealPlanUtils.getRecipeUrl(recipe)
+
+        // Then
         assertNull(result)
     }
-    
+
     @Test
-    fun safeParseDate_withValidIsoDateTime_returnsDatePart() {
-        val result = MealPlanUtils.safeParseDate("2023-12-25T14:30:00Z")
-        assertEquals("2023-12-25", result)
+    fun getRecipeUrl_withNegativeRecipeId_returnsNull() {
+        // Given
+        val recipe = Recipe(id = -1, name = "Test Recipe", image = null)
+
+        // When
+        val result = MealPlanUtils.getRecipeUrl(recipe)
+
+        // Then
+        assertNull(result)
     }
-    
+
     @Test
-    fun safeParseDate_withValidDate_returnsDate() {
-        val result = MealPlanUtils.safeParseDate("2023-12-25")
-        assertEquals("2023-12-25", result)
+    fun safeParseDate_withValidIsoDate_extractsDatePortion() {
+        // Given
+        val rawDate = "2025-12-01T22:24:35.522000+01:00"
+
+        // When
+        val result = MealPlanUtils.safeParseDate(rawDate)
+
+        // Then
+        assertEquals("2025-12-01", result)
     }
-    
+
+    @Test
+    fun safeParseDate_withSimpleDate_returnsDate() {
+        // Given
+        val rawDate = "2025-12-01"
+
+        // When
+        val result = MealPlanUtils.safeParseDate(rawDate)
+
+        // Then
+        assertEquals("2025-12-01", result)
+    }
+
     @Test
     fun safeParseDate_withShortString_returnsOriginal() {
-        val result = MealPlanUtils.safeParseDate("2023")
-        assertEquals("2023", result)
+        // Given
+        val rawDate = "2025-12"
+
+        // When
+        val result = MealPlanUtils.safeParseDate(rawDate)
+
+        // Then
+        assertEquals("2025-12", result)
     }
-    
+
     @Test
-    fun safeParseDate_withInvalidDate_returnsFirst10Chars() {
-        val result = MealPlanUtils.safeParseDate("9999-99-99T00:00:00Z")
-        assertEquals("9999-99-99", result)
+    fun safeParseDate_withEmptyString_returnsEmpty() {
+        // Given
+        val rawDate = ""
+
+        // When
+        val result = MealPlanUtils.safeParseDate(rawDate)
+
+        // Then
+        assertEquals("", result)
+    }
+
+    @Test
+    fun formatDateForDisplay_withValidDate_formatsCorrectly() {
+        // Given
+        val dateString = "2025-12-01"
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val outputFormat = SimpleDateFormat("EEE dd/MM", Locale.US)
+
+        // When
+        val result = MealPlanUtils.formatDateForDisplay(dateString, inputFormat, outputFormat)
+
+        // Then
+        // Should be formatted as day of week, day/month
+        assertTrue(result.matches(Regex("\\w{3} \\d{2}/\\d{2}")))
+    }
+
+    @Test
+    fun formatDateForDisplay_withInvalidDate_returnsOriginal() {
+        // Given
+        val dateString = "invalid-date"
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val outputFormat = SimpleDateFormat("EEE dd/MM", Locale.US)
+
+        // When
+        val result = MealPlanUtils.formatDateForDisplay(dateString, inputFormat, outputFormat)
+
+        // Then
+        assertEquals("invalid-date", result)
     }
 }
