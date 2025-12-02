@@ -54,11 +54,16 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     private fun updateFlattenedMeals() {
         flattenedMeals.clear()
         for ((date, meals) in dailyMeals) {
-            val parsedDate = sdf.parse(date)
-            val dayDisplay = if (parsedDate != null) {
-                dayDisplayFormat.format(parsedDate)
-            } else {
-                Log.e(TAG, "Failed to parse date: $date")
+            val dayDisplay = try {
+                val parsedDate = sdf.parse(date)
+                if (parsedDate != null) {
+                    dayDisplayFormat.format(parsedDate)
+                } else {
+                    Log.e(TAG, "Failed to parse date: $date")
+                    date // Fallback to showing the raw date
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception parsing date: $date", e)
                 date // Fallback to showing the raw date
             }
             
@@ -214,14 +219,20 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
             val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
             
-            if (tandoorUrl.isNotEmpty() && mealPlan.recipe.id > 0) {
+            // Validate URL and recipe ID before creating intent
+            if (!tandoorUrl.isNullOrEmpty() && 
+                (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://")) &&
+                mealPlan.recipe.id > 0) {
                 try {
                     val recipeUrl = "$tandoorUrl/recipe/${mealPlan.recipe.id}/"
                     val uri = android.net.Uri.parse(recipeUrl)
                     
-                    val fillInIntent = Intent(Intent.ACTION_VIEW)
-                    fillInIntent.data = uri
-                    remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+                    // Ensure URI is valid
+                    if (uri != null && uri.scheme != null) {
+                        val fillInIntent = Intent(Intent.ACTION_VIEW)
+                        fillInIntent.data = uri
+                        remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to create recipe URL for meal ${mealPlan.id}", e)
                 }
