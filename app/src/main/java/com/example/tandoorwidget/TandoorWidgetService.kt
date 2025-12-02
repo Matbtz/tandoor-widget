@@ -32,7 +32,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     override fun onDataSetChanged() {
-        sendLogBroadcast("Starting data refresh...")
+        sendLogBroadcast("=== Starting data refresh ===")
         val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val apiKey = sharedPrefs.getString("api_key_$appWidgetId", "") ?: ""
         val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "") ?: ""
@@ -42,10 +42,11 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             return
         }
 
-        sendLogBroadcast("URL: $tandoorUrl")
+        sendLogBroadcast("Base URL: $tandoorUrl")
 
         // Calculate dates first so we can show them even on error
         val calendar = Calendar.getInstance()
+        sendLogBroadcast("Current date: ${sdf.format(calendar.time)}, Day: ${calendar.get(Calendar.DAY_OF_WEEK)}")
 
         // Find the start date (Saturday)
         // If today is Saturday, we want today. If today is Sunday, we want yesterday (Saturday).
@@ -53,11 +54,15 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             calendar.add(Calendar.DATE, -1)
         }
 
+        sendLogBroadcast("Week start (Saturday): ${sdf.format(calendar.time)}")
+
         val dates = (0..6).map {
             val date = sdf.format(calendar.time)
             calendar.add(Calendar.DATE, 1)
             date
         }
+
+        sendLogBroadcast("Week dates: ${dates.joinToString(", ")}")
 
         try {
             val apiService = ApiClient.getApiService(tandoorUrl)
@@ -66,28 +71,55 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             val fromDate = dates.first()
             val toDate = dates.last()
 
-            sendLogBroadcast("Req: $fromDate to $toDate")
+            sendLogBroadcast("API Request: GET api/meal-plan/?from_date=$fromDate&to_date=$toDate")
+            sendLogBroadcast("Authorization: Token ***${apiKey.length} characters***")
 
             val response = apiService.getMealPlan(authorization, fromDate, toDate).execute()
+            
+            sendLogBroadcast("Response code: ${response.code()}")
+            sendLogBroadcast("Response message: ${response.message()}")
+            
             if (response.isSuccessful) {
                 val mealPlans = response.body()?.results
                 val count = mealPlans?.size ?: 0
-                sendLogBroadcast("Success: $count meals")
+                sendLogBroadcast("Success: Received $count meal plans")
+
+                // Debug: Log each meal plan's date
+                mealPlans?.forEachIndexed { index, meal ->
+                    val rawDate = meal.from_date
+                    val parsedDate = rawDate.substring(0, 10)
+                    // Sanitize recipe name for logging (truncate and remove newlines)
+                    val recipeName = meal.recipe.name.replace("\n", " ").take(50)
+                    sendLogBroadcast("Meal #${index + 1}: '${recipeName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate'")
+                }
 
                 val mealPlansByDate = mealPlans?.associateBy { it.from_date.substring(0, 10) } ?: emptyMap()
+                
+                sendLogBroadcast("Meal plans by date map keys: ${mealPlansByDate.keys.joinToString(", ")}")
+                
                 dailyMeals.clear()
                 dailyMeals.addAll(dates.map { date ->
-                    Pair(date, mealPlansByDate[date])
+                    val meal = mealPlansByDate[date]
+                    if (meal != null) {
+                        val recipeName = meal.recipe.name.replace("\n", " ").take(50)
+                        sendLogBroadcast("✓ Matched date '$date' to meal: $recipeName")
+                    } else {
+                        sendLogBroadcast("✗ No match for date '$date'")
+                    }
+                    Pair(date, meal)
                 })
+                
+                sendLogBroadcast("=== Data refresh complete: ${dailyMeals.count { it.second != null }} meals matched ===")
             } else {
                 val errorBody = response.errorBody()?.string() ?: "Unknown error"
-                sendErrorBroadcast("Err: ${response.code()} - $errorBody")
+                sendErrorBroadcast("API Error ${response.code()}: $errorBody")
                 // Still show dates even on error
                 dailyMeals.clear()
                 dailyMeals.addAll(dates.map { date -> Pair(date, null) })
             }
         } catch (e: Exception) {
-            sendErrorBroadcast("Ex: ${e.message}", e)
+            sendErrorBroadcast("Exception during API call: ${e.javaClass.simpleName} - ${e.message}", e)
+            e.printStackTrace()
             // Still show dates even on exception
             dailyMeals.clear()
             dailyMeals.addAll(dates.map { date -> Pair(date, null) })
