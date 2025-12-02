@@ -12,6 +12,8 @@ import android.widget.Toast
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.os.Build
+import android.content.ClipboardManager
+import android.content.ClipData
 
 class ConfigActivity : Activity() {
     private lateinit var debugLogsTextView: TextView
@@ -46,6 +48,7 @@ class ConfigActivity : Activity() {
         val testApiButton = findViewById<Button>(R.id.test_api_button)
         debugLogsTextView = findViewById(R.id.debug_logs)
         val clearLogsButton = findViewById<Button>(R.id.clear_logs_button)
+        val copyLogsButton = findViewById<Button>(R.id.copy_logs_button)
         val doneButton = findViewById<Button>(R.id.done_button)
 
         appWidgetId = intent?.extras?.getInt(
@@ -86,6 +89,13 @@ class ConfigActivity : Activity() {
         clearLogsButton.setOnClickListener {
             logs.clear()
             debugLogsTextView.text = "Logs cleared. Refresh widget to see new logs..."
+        }
+
+        copyLogsButton.setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("Tandoor Widget Logs", logs.toString())
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(this, "Logs copied to clipboard", Toast.LENGTH_SHORT).show()
         }
 
         doneButton.setOnClickListener {
@@ -175,7 +185,7 @@ class ConfigActivity : Activity() {
         Thread {
             try {
                 val apiService = ApiClient.getApiService(baseUrl)
-                val authorization = "Token $apiKey"
+                val authorization = "Bearer $apiKey"
                 
                 // Get current week dates for testing
                 val calendar = java.util.Calendar.getInstance()
