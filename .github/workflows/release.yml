@@ -26,14 +26,30 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: wrapper
+      
       - name: Decode Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           echo "$KEYSTORE_BASE64" | base64 --decode > ${{ github.workspace }}/keystore.jks
       
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Validate Gradle Wrapper
+        run: |
+          if [ -f "gradlew" ]; then
+            echo "✓ Gradle wrapper found"
+            chmod +x gradlew
+            if [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+              echo "✓ Gradle wrapper JAR found"
+            else
+              echo "⚠ Warning: gradle-wrapper.jar not found, gradle-build-action will handle it"
+            fi
+          else
+            echo "⚠ Warning: gradlew not found, gradle-build-action will handle it"
+          fi
       
       - name: Build Release APK
         env:
@@ -41,7 +57,14 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          if [ -f "gradlew" ]; then
+            echo "Building with Gradle wrapper..."
+            ./gradlew assembleRelease --no-daemon --stacktrace
+          else
+            echo "Building with Gradle from gradle-build-action..."
+            gradle assembleRelease --no-daemon --stacktrace
+          fi
       
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
