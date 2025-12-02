@@ -27,12 +27,33 @@ jobs:
           echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
           echo "Generated tag: ${TAG_NAME}"
       
-      - name: Create and push tag
+      - name: Create and push tag via API
         env:
           TAG_NAME: ${{ steps.generate_tag.outputs.tag_name }}
+          GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "${TAG_NAME}"
-          git push origin "${TAG_NAME}"
-          echo "Tag ${TAG_NAME} created and pushed successfully"
+          # Get the commit SHA for the merge commit
+          COMMIT_SHA="${{ github.event.pull_request.merge_commit_sha }}"
+          
+          # Create tag via GitHub API using REPO_PAT
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/refs" \
+            -d "{\"ref\":\"refs/tags/${TAG_NAME}\",\"sha\":\"${COMMIT_SHA}\"}"
+          
+          echo "Tag ${TAG_NAME} created successfully via API"
+      
+      - name: Trigger release workflow
+        env:
+          TAG_NAME: ${{ steps.generate_tag.outputs.tag_name }}
+          GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
+        run: |
+          # Trigger the release workflow via API using REPO_PAT
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/release.yml/dispatches" \
+            -d "{\"ref\":\"${TAG_NAME}\"}"
+          
+          echo "Release workflow triggered for tag ${TAG_NAME}"
