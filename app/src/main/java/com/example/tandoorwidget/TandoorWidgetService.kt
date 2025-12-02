@@ -27,6 +27,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     private val TAG = "TandoorWidget"
     private val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val dayDisplayFormat = SimpleDateFormat("EEE dd/MM", Locale.US)
+    private val MAX_RECIPE_NAME_LENGTH = 15
 
     override fun onCreate() {
         // Initialize dates immediately so they show even before API call
@@ -53,12 +54,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     private fun updateFlattenedMeals() {
         flattenedMeals.clear()
         for ((date, meals) in dailyMeals) {
-            val calendar = Calendar.getInstance()
             val parsedDate = sdf.parse(date)
-            if (parsedDate != null) {
-                calendar.time = parsedDate
+            val dayDisplay = if (parsedDate != null) {
+                dayDisplayFormat.format(parsedDate)
+            } else {
+                Log.e(TAG, "Failed to parse date: $date")
+                date // Fallback to showing the raw date
             }
-            val dayDisplay = dayDisplayFormat.format(calendar.time)
             
             if (meals.isEmpty()) {
                 // Show day with no meals
@@ -201,21 +203,24 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         remoteViews.setTextViewText(R.id.day_of_week, dayDisplay)
 
         if (mealPlan != null) {
-            // Truncate recipe name to 15 characters
-            val recipeName = mealPlan.recipe.name.take(15).let { 
-                if (mealPlan.recipe.name.length > 15) "$it..." else it 
+            // Truncate recipe name
+            val recipeName = mealPlan.recipe.name.take(MAX_RECIPE_NAME_LENGTH).let { 
+                if (mealPlan.recipe.name.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
             }
             val mealText = "${mealPlan.meal_type_name}: $recipeName"
             remoteViews.setTextViewText(R.id.meal, mealText)
             
             // Set up click intent to open recipe
             val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "") ?: ""
-            val recipeUrl = "$tandoorUrl/recipe/${mealPlan.recipe.id}/"
+            val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
             
-            val fillInIntent = Intent(Intent.ACTION_VIEW)
-            fillInIntent.data = android.net.Uri.parse(recipeUrl)
-            remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+            if (tandoorUrl.isNotEmpty()) {
+                val recipeUrl = "$tandoorUrl/recipe/${mealPlan.recipe.id}/"
+                
+                val fillInIntent = Intent(Intent.ACTION_VIEW)
+                fillInIntent.data = android.net.Uri.parse(recipeUrl)
+                remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
+            }
         } else {
             remoteViews.setTextViewText(R.id.meal, "---")
         }
