@@ -105,7 +105,7 @@ Look for the actual HTTP request being made and the full response body.
 Test the API using curl or a browser:
 
 ```bash
-curl -H "Authorization: Token YOUR_API_KEY" \
+curl -H "Authorization: Bearer YOUR_API_KEY" \
   "https://your-tandoor.com/api/meal-plan/?from_date=2025-12-01&to_date=2025-12-07"
 ```
 

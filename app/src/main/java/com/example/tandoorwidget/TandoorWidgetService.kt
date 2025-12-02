@@ -66,13 +66,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
         try {
             val apiService = ApiClient.getApiService(tandoorUrl)
-            val authorization = "Token $apiKey"
+            val authorization = "Bearer $apiKey"
 
             val fromDate = dates.first()
             val toDate = dates.last()
 
             sendLogBroadcast("API Request: GET api/meal-plan/?from_date=$fromDate&to_date=$toDate")
-            sendLogBroadcast("Authorization: Token ***${apiKey.length} characters***")
+            sendLogBroadcast("Authorization: Bearer ***${apiKey.length} characters***")
 
             val response = apiService.getMealPlan(authorization, fromDate, toDate).execute()
             
