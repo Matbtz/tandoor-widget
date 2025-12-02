@@ -21,14 +21,55 @@ class TandoorWidgetService : RemoteViewsService() {
 }
 
 class TandoorWidgetRemoteViewsFactory(private val context: Context, private val intent: Intent) : RemoteViewsService.RemoteViewsFactory {
-    private val dailyMeals = mutableListOf<Pair<String, MealPlan?>>()
+    private val dailyMeals = mutableListOf<Pair<String, List<MealPlan>>>()
+    private val flattenedMeals = mutableListOf<Triple<String, String, MealPlan?>>() // date, dayDisplay, meal
     private val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
     private val TAG = "TandoorWidget"
     private val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val dayDisplayFormat = SimpleDateFormat("EEE dd/MM", Locale.US)
 
     override fun onCreate() {
-        // Not needed for this implementation
+        // Initialize dates immediately so they show even before API call
+        val calendar = Calendar.getInstance()
+        // Find the start date (Saturday)
+        while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+            calendar.add(Calendar.DATE, -1)
+        }
+        
+        val dates = (0..6).map {
+            val date = sdf.format(calendar.time)
+            calendar.add(Calendar.DATE, 1)
+            date
+        }
+        
+        // Initialize with empty meal lists
+        dailyMeals.clear()
+        dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
+        
+        // Build flattened structure for display
+        updateFlattenedMeals()
+    }
+    
+    private fun updateFlattenedMeals() {
+        flattenedMeals.clear()
+        for ((date, meals) in dailyMeals) {
+            val calendar = Calendar.getInstance()
+            val parsedDate = sdf.parse(date)
+            if (parsedDate != null) {
+                calendar.time = parsedDate
+            }
+            val dayDisplay = dayDisplayFormat.format(calendar.time)
+            
+            if (meals.isEmpty()) {
+                // Show day with no meals
+                flattenedMeals.add(Triple(date, dayDisplay, null))
+            } else {
+                // Show each meal as a separate row with the same day label
+                meals.forEach { meal ->
+                    flattenedMeals.add(Triple(date, dayDisplay, meal))
+                }
+            }
+        }
     }
 
     override fun onDataSetChanged() {
@@ -93,36 +134,39 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                     sendLogBroadcast("Meal #${index + 1}: '${recipeName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate'")
                 }
 
-                val mealPlansByDate = mealPlans?.associateBy { it.from_date.substring(0, 10) } ?: emptyMap()
+                val mealPlansByDate = mealPlans?.groupBy { it.from_date.substring(0, 10) } ?: emptyMap()
                 
                 sendLogBroadcast("Meal plans by date map keys: ${mealPlansByDate.keys.joinToString(", ")}")
                 
                 dailyMeals.clear()
                 dailyMeals.addAll(dates.map { date ->
-                    val meal = mealPlansByDate[date]
-                    if (meal != null) {
-                        val recipeName = meal.recipe.name.replace("\n", " ").take(50)
-                        sendLogBroadcast("✓ Matched date '$date' to meal: $recipeName")
+                    val meals = mealPlansByDate[date] ?: emptyList()
+                    if (meals.isNotEmpty()) {
+                        val recipeNames = meals.joinToString(", ") { it.recipe.name.replace("\n", " ").take(30) }
+                        sendLogBroadcast("✓ Matched date '$date' to ${meals.size} meal(s): $recipeNames")
                     } else {
                         sendLogBroadcast("✗ No match for date '$date'")
                     }
-                    Pair(date, meal)
+                    Pair(date, meals)
                 })
                 
-                sendLogBroadcast("=== Data refresh complete: ${dailyMeals.count { it.second != null }} meals matched ===")
+                updateFlattenedMeals()
+                sendLogBroadcast("=== Data refresh complete: ${dailyMeals.count { it.second.isNotEmpty() }} meals matched ===")
             } else {
                 val errorBody = response.errorBody()?.string() ?: "Unknown error"
                 sendErrorBroadcast("API Error ${response.code()}: $errorBody")
                 // Still show dates even on error
                 dailyMeals.clear()
-                dailyMeals.addAll(dates.map { date -> Pair(date, null) })
+                dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
+                updateFlattenedMeals()
             }
         } catch (e: Exception) {
             sendErrorBroadcast("Exception during API call: ${e.javaClass.simpleName} - ${e.message}", e)
             e.printStackTrace()
             // Still show dates even on exception
             dailyMeals.clear()
-            dailyMeals.addAll(dates.map { date -> Pair(date, null) })
+            dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
+            updateFlattenedMeals()
         }
     }
 
@@ -147,27 +191,31 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     override fun getCount(): Int {
-        return dailyMeals.size
+        return flattenedMeals.size
     }
 
     override fun getViewAt(position: Int): RemoteViews {
         val remoteViews = RemoteViews(context.packageName, R.layout.widget_day_item)
-        val (date, mealPlan) = dailyMeals[position]
-        
-        val calendar = Calendar.getInstance()
-        val parsedDate = sdf.parse(date)
-        if (parsedDate != null) {
-            calendar.time = parsedDate
-        } else {
-            Log.e(TAG, "Failed to parse date: $date")
-        }
-        val dayOfWeek = dayDisplayFormat.format(calendar.time)
+        val (date, dayDisplay, mealPlan) = flattenedMeals[position]
 
-        remoteViews.setTextViewText(R.id.day_of_week, dayOfWeek)
+        remoteViews.setTextViewText(R.id.day_of_week, dayDisplay)
 
         if (mealPlan != null) {
-            val mealText = "${mealPlan.meal_type_name}: ${mealPlan.recipe.name}"
+            // Truncate recipe name to 15 characters
+            val recipeName = mealPlan.recipe.name.take(15).let { 
+                if (mealPlan.recipe.name.length > 15) "$it..." else it 
+            }
+            val mealText = "${mealPlan.meal_type_name}: $recipeName"
             remoteViews.setTextViewText(R.id.meal, mealText)
+            
+            // Set up click intent to open recipe
+            val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+            val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "") ?: ""
+            val recipeUrl = "$tandoorUrl/recipe/${mealPlan.recipe.id}/"
+            
+            val fillInIntent = Intent(Intent.ACTION_VIEW)
+            fillInIntent.data = android.net.Uri.parse(recipeUrl)
+            remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
         } else {
             remoteViews.setTextViewText(R.id.meal, "---")
         }

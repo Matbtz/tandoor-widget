@@ -118,6 +118,16 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         views.setRemoteAdapter(R.id.calendar_view, serviceIntent)
 
+        // Set up PendingIntent template for clickable meal items
+        val clickIntent = Intent(Intent.ACTION_VIEW)
+        val clickPendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            clickIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+        views.setPendingIntentTemplate(R.id.calendar_view, clickPendingIntent)
+
         appWidgetManager.updateAppWidget(appWidgetId, views)
         
         // Trigger initial data load
