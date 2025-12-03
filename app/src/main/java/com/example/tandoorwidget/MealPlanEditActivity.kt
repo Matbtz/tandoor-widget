@@ -139,8 +139,13 @@ class MealPlanEditActivity : Activity() {
         val selectedFromDateIndex = moveToDateSpinner.selectedItemPosition
         val selectedToDateIndex = extendToDateSpinner.selectedItemPosition
         
+        if (selectedFromDateIndex < 0 || selectedFromDateIndex >= dates.size) {
+            Toast.makeText(this, "Invalid start date selection", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
         val newFromDate = dates[selectedFromDateIndex]
-        val newToDate = if (selectedToDateIndex > 0) {
+        val newToDate = if (selectedToDateIndex > 0 && selectedToDateIndex <= dates.size) {
             dates[selectedToDateIndex - 1] // -1 for "None" option
         } else {
             null
@@ -177,7 +182,7 @@ class MealPlanEditActivity : Activity() {
                     finish()
                 } else {
                     val errorBody = response.errorBody()?.string() ?: "Unknown error"
-                    Toast.makeText(this@MealPlanEditActivity, "Update failed: ${response.code()}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MealPlanEditActivity, "Update failed: ${response.code()} - $errorBody", Toast.LENGTH_LONG).show()
                 }
             }
             

@@ -244,11 +244,12 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 
                 // Add visual indicator for multi-day meals
                 val prefix = if (MealPlanUtils.isMultiDayMeal(meal)) "📅 " else ""
-                val nameWithIndicator = prefix + displayName
                 
-                val truncatedName = nameWithIndicator.take(MAX_RECIPE_NAME_LENGTH + prefix.length).let { 
-                    if (nameWithIndicator.length > MAX_RECIPE_NAME_LENGTH + prefix.length) "$it..." else it 
+                // Truncate the display name first, then add prefix
+                val truncatedDisplayName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
+                    if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
                 }
+                val truncatedName = prefix + truncatedDisplayName
                 
                 // Set text and make visible
                 remoteViews.setTextViewText(recipeId, truncatedName)
