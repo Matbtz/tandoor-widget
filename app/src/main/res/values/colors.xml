@@ -63,7 +63,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="debug_log_background">#F0F0F0</color>
     
-    <!-- Legacy colors kept for backward compatibility -->
+    <!-- Legacy colors from previous design (pre-2025 redesign) -->
+    <!-- Kept for potential external references or backward compatibility -->
+    <!-- Not used in current widget implementation -->
     <color name="meal_card_background">#FAF0E6</color>
     <color name="sand_text">#C2B280</color>
 </resources>
