@@ -236,7 +236,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 if (!tandoorUrl.isNullOrEmpty() && 
                     (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://"))) {
                     try {
-                        val recipeUrlId = MealPlanUtils.getRecipeUrl(meal.recipe.id)
+                        val recipeUrlId = MealPlanUtils.getRecipeUrl(meal.recipe)
                         val targetUrl = if (recipeUrlId != null) {
                             "$tandoorUrl/recipe/$recipeUrlId"
                         } else {
