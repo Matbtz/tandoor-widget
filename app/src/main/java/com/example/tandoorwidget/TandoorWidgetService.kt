@@ -153,13 +153,14 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 }
 
                 // Build a map of date -> meals
-                // Multi-day meals appear only on their start date
+                // Multi-day meals appear on ALL days they span
                 val mealPlansByDate = mutableMapOf<String, MutableList<MealPlan>>()
                 mealPlans?.forEach { meal ->
-                    val fromDate = MealPlanUtils.safeParseDate(meal.from_date)
-                    // Only add meal if its start date is in our date range
-                    if (dates.contains(fromDate)) {
-                        mealPlansByDate.getOrPut(fromDate) { mutableListOf() }.add(meal)
+                    // For each meal, add it to all dates it applies to
+                    dates.forEach { date ->
+                        if (MealPlanUtils.mealAppliesToDate(meal, date, sdf)) {
+                            mealPlansByDate.getOrPut(date) { mutableListOf() }.add(meal)
+                        }
                     }
                 }
                 
@@ -245,25 +246,22 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 val recipeId = recipeIds[index]
                 val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title)
                 
-                // For multi-day meals, add date range suffix
-                val suffix = if (MealPlanUtils.isMultiDayMeal(meal)) {
-                    val fromDate = MealPlanUtils.safeParseDate(meal.from_date)
-                    val toDate = meal.to_date?.let { MealPlanUtils.safeParseDate(it) }
-                    if (toDate != null) {
-                        val span = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, sdf)
-                        if (span.isNotEmpty()) " ($span)" else ""
-                    } else ""
-                } else ""
-                
-                // Truncate the display name, then add suffix
-                val truncatedDisplayName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
+                // Truncate the display name (no date range suffix)
+                val truncatedName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
                     if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
                 }
-                val truncatedName = truncatedDisplayName + suffix
                 
                 // Set text and make visible
                 remoteViews.setTextViewText(recipeId, truncatedName)
                 remoteViews.setViewVisibility(recipeId, View.VISIBLE)
+                
+                // Use different background for multi-day meals
+                val background = if (MealPlanUtils.isMultiDayMeal(meal)) {
+                    R.drawable.meal_card_multiday_background
+                } else {
+                    R.drawable.meal_card_background
+                }
+                remoteViews.setInt(recipeId, "setBackgroundResource", background)
                 
                 // Set up click intent to open edit activity for this meal
                 try {
