@@ -254,21 +254,16 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 remoteViews.setTextViewText(recipeId, truncatedName)
                 remoteViews.setViewVisibility(recipeId, View.VISIBLE)
                 
-                // Set up click intent for this recipe
-                if (!tandoorUrl.isNullOrEmpty() && 
-                    (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://"))) {
-                    try {
-                        val targetUrl = MealPlanUtils.buildRecipeUrl(tandoorUrl, meal.recipe)
-                        val uri = android.net.Uri.parse(targetUrl)
-                        
-                        if (uri != null && uri.scheme != null) {
-                            val fillInIntent = Intent(Intent.ACTION_VIEW)
-                            fillInIntent.data = uri
-                            remoteViews.setOnClickFillInIntent(recipeId, fillInIntent)
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to create URL for recipe", e)
-                    }
+                // Set up click intent to open edit activity for this meal
+                try {
+                    val fillInIntent = Intent()
+                    fillInIntent.putExtra("meal_plan_id", meal.id)
+                    fillInIntent.putExtra("meal_name", displayName)
+                    fillInIntent.putExtra("from_date", MealPlanUtils.safeParseDate(meal.from_date))
+                    fillInIntent.putExtra("to_date", meal.to_date?.let { MealPlanUtils.safeParseDate(it) })
+                    remoteViews.setOnClickFillInIntent(recipeId, fillInIntent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to create click intent for meal", e)
                 }
             }
         }
