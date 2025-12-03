@@ -38,6 +38,16 @@
     <color name="multiday_indicator">#8B5CF6</color>
     <color name="multiday_badge_bg">#EDE9FE</color>
     
+    <!-- Meal card specific colors -->
+    <color name="meal_card_lunch_bg">#FFF7ED</color>
+    <color name="meal_card_lunch_border">#FDBA74</color>
+    <color name="meal_card_dinner_bg">#FDF2F8</color>
+    <color name="meal_card_dinner_border">#F9A8D4</color>
+    
+    <!-- UI elements -->
+    <color name="divider_light">#E5E7EB</color>
+    <color name="widget_border">#1A000000</color>
+    
     <!-- Status Colors -->
     <color name="success">#10B981</color>
     <color name="warning">#F59E0B</color>
