@@ -14,33 +14,29 @@
         android:gravity="center_vertical"
         android:paddingBottom="12dp">
 
-        <ImageView
-            android:id="@+id/app_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_meal_plan"
-            android:contentDescription="Meal Plan Icon" />
-
         <TextView
             android:id="@+id/widget_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:text="Meal Plan"
+            android:text="🍽️ Meal Plan"
             android:textColor="@color/text_primary"
             android:textSize="18sp"
-            android:fontFamily="sans-serif-medium" />
+            android:fontFamily="sans-serif-medium"
+            android:contentDescription="Meal Plan Widget" />
 
-        <ImageButton
+        <Button
             android:id="@+id/refresh_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="40dp"
+            android:minHeight="40dp"
             android:background="@drawable/circular_button_bg"
-            android:src="@drawable/ic_refresh"
-            android:contentDescription="Refresh"
-            android:padding="8dp"
-            android:scaleType="centerInside" />
+            android:text="↻"
+            android:textSize="20sp"
+            android:textColor="@color/accent_primary"
+            android:contentDescription="Refresh meal plan"
+            android:padding="8dp" />
     </LinearLayout>
 
     <!-- Subtle divider -->
