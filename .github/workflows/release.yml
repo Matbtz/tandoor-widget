@@ -81,9 +81,53 @@ jobs:
         with:
           name: app-release
       
-      - name: Get version from tag
+      - name: Determine tag name
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Workflow triggered manually - extracting version from build.gradle"
+            
+            # Extract versionName from app/build.gradle
+            VERSION_NAME=$(grep -oP 'versionName\s+"\K[^"]+' app/build.gradle)
+            
+            if [ -z "$VERSION_NAME" ]; then
+              echo "Error: Could not extract versionName from app/build.gradle"
+              exit 1
+            fi
+            
+            echo "Extracted versionName: $VERSION_NAME"
+            
+            # Add 'v' prefix if not present
+            if [[ ! "$VERSION_NAME" =~ ^v ]]; then
+              TAG_NAME="v${VERSION_NAME}"
+            else
+              TAG_NAME="$VERSION_NAME"
+            fi
+            
+            echo "Tag name will be: $TAG_NAME"
+            echo "VERSION=$TAG_NAME" >> $GITHUB_OUTPUT
+            
+            # Create tag if it doesn't exist
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "github-actions[bot]"
+            
+            # Check if tag exists remotely
+            if git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME$"; then
+              echo "Tag $TAG_NAME already exists remotely"
+              echo "TAG_EXISTS=true" >> $GITHUB_OUTPUT
+            else
+              echo "Creating new tag: $TAG_NAME"
+              git tag "$TAG_NAME"
+              git push origin "$TAG_NAME"
+              echo "TAG_EXISTS=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Workflow triggered by tag push"
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            echo "Using existing tag: $TAG_NAME"
+            echo "VERSION=$TAG_NAME" >> $GITHUB_OUTPUT
+            echo "TAG_EXISTS=true" >> $GITHUB_OUTPUT
+          fi
       
       - name: Create Release
         uses: softprops/action-gh-release@v2
