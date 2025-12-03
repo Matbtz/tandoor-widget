@@ -47,6 +47,26 @@ object MealPlanUtils {
     }
 
     /**
+     * Build the complete recipe URL for a meal plan entry.
+     * Returns the base Tandoor URL if recipe is null or invalid.
+     *
+     * @param tandoorUrl The base Tandoor URL (e.g., "https://tandoor.example.com")
+     * @param recipe The recipe object (can be null for placeholders)
+     * @return The complete recipe URL with trailing slash, or base URL if recipe is invalid
+     */
+    fun buildRecipeUrl(tandoorUrl: String, recipe: Recipe?): String {
+        val recipeId = getRecipeUrl(recipe)
+        return if (recipeId != null) {
+            // Remove trailing slash from base URL to avoid double slashes
+            val baseUrl = tandoorUrl.trimEnd('/')
+            "$baseUrl/recipe/$recipeId/"
+        } else {
+            Log.d(TAG, "No valid recipe ID, returning base URL")
+            tandoorUrl
+        }
+    }
+
+    /**
      * Safely parse a date string in ISO 8601 format.
      * Extracts the date portion (YYYY-MM-DD) from timestamps like "2025-12-01T22:24:35.522000+01:00"
      *
