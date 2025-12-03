@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -14,6 +13,9 @@ import android.widget.Toast
  * Activity that presents options for interacting with a recipe card:
  * 1. View Recipe - Opens the recipe URL in a browser
  * 2. Edit Dates - Opens MealPlanEditActivity to modify meal plan dates
+ * 
+ * This dialog provides a workaround for Android widget limitations (no long-press support).
+ * Users can choose between viewing the recipe or editing the meal plan dates.
  */
 class RecipeActionActivity : Activity() {
     
@@ -47,7 +49,7 @@ class RecipeActionActivity : Activity() {
                 }
             }
         } else {
-            // Disable button if no recipe URL available
+            // Disable button if no recipe URL available (placeholder meals)
             viewRecipeButton.isEnabled = false
             viewRecipeButton.alpha = 0.5f
         }
