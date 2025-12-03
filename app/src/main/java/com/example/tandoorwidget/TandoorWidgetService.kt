@@ -69,13 +69,16 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 // Show day with no meals
                 flattenedMeals.add(GroupedMeal(date, dayDisplay, null, emptyList()))
             } else {
-                // Group meals by meal_type_name for the same day
-                val mealsByType = meals.groupBy { it.meal_type_name }
-                
-                // Create one row per meal type with all recipes for that type
-                mealsByType.forEach { (mealTypeName, mealsOfType) ->
-                    flattenedMeals.add(GroupedMeal(date, dayDisplay, mealTypeName, mealsOfType))
+                // Combine all meals for the day in one row
+                // Sort by meal type: lunch first, then dinner
+                val sortedMeals = meals.sortedBy { meal ->
+                    when (meal.meal_type_name.lowercase()) {
+                        "lunch" -> 0
+                        "dinner" -> 1
+                        else -> 2  // Other meal types come last
+                    }
                 }
+                flattenedMeals.add(GroupedMeal(date, dayDisplay, null, sortedMeals))
             }
         }
     }
@@ -149,14 +152,14 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                     sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Date: $dateRange - URL: '$recipeUrl'")
                 }
 
-                // Build a map of date -> meals, handling multi-day meals
+                // Build a map of date -> meals
+                // Multi-day meals appear only on their start date
                 val mealPlansByDate = mutableMapOf<String, MutableList<MealPlan>>()
                 mealPlans?.forEach { meal ->
-                    // For each date in the widget's date range, check if this meal applies
-                    dates.forEach { date ->
-                        if (MealPlanUtils.mealAppliesToDate(meal, date, sdf)) {
-                            mealPlansByDate.getOrPut(date) { mutableListOf() }.add(meal)
-                        }
+                    val fromDate = MealPlanUtils.safeParseDate(meal.from_date)
+                    // Only add meal if its start date is in our date range
+                    if (dates.contains(fromDate)) {
+                        mealPlansByDate.getOrPut(fromDate) { mutableListOf() }.add(meal)
                     }
                 }
                 
@@ -233,7 +236,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             remoteViews.setViewVisibility(id, View.GONE)
         }
 
-        if (groupedMeal.mealTypeName != null && groupedMeal.meals.isNotEmpty()) {
+        if (groupedMeal.meals.isNotEmpty()) {
             val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
             val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
             
@@ -242,14 +245,21 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 val recipeId = recipeIds[index]
                 val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title)
                 
-                // Add visual indicator for multi-day meals
-                val prefix = if (MealPlanUtils.isMultiDayMeal(meal)) "📅 " else ""
+                // For multi-day meals, add date range suffix
+                val suffix = if (MealPlanUtils.isMultiDayMeal(meal)) {
+                    val fromDate = MealPlanUtils.safeParseDate(meal.from_date)
+                    val toDate = meal.to_date?.let { MealPlanUtils.safeParseDate(it) }
+                    if (toDate != null) {
+                        val span = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, sdf)
+                        if (span.isNotEmpty()) " ($span)" else ""
+                    } else ""
+                } else ""
                 
-                // Truncate the display name first, then add prefix
+                // Truncate the display name, then add suffix
                 val truncatedDisplayName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
                     if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
                 }
-                val truncatedName = prefix + truncatedDisplayName
+                val truncatedName = truncatedDisplayName + suffix
                 
                 // Set text and make visible
                 remoteViews.setTextViewText(recipeId, truncatedName)

@@ -117,6 +117,38 @@ object MealPlanUtils {
     }
     
     /**
+     * Format a date range span for multi-day meals.
+     * Converts from_date and to_date into a compact format like "Sat-Mon" or "Sat-Sun".
+     *
+     * @param fromDate Date in YYYY-MM-DD format
+     * @param toDate Date in YYYY-MM-DD format
+     * @param inputFormat SimpleDateFormat for parsing
+     * @return Formatted date range string (e.g., "Sat-Mon"), or empty string if formatting fails
+     */
+    fun formatDateRangeSpan(
+        fromDate: String,
+        toDate: String,
+        inputFormat: SimpleDateFormat
+    ): String {
+        return try {
+            val dayFormat = SimpleDateFormat("EEE", Locale.US)
+            val fromParsed = inputFormat.parse(fromDate)
+            val toParsed = inputFormat.parse(toDate)
+            
+            if (fromParsed != null && toParsed != null) {
+                val fromDay = dayFormat.format(fromParsed)
+                val toDay = dayFormat.format(toParsed)
+                "$fromDay-$toDay"
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception formatting date range span: $fromDate to $toDate", e)
+            ""
+        }
+    }
+    
+    /**
      * Check if a meal plan spans multiple days.
      * 
      * @param mealPlan The meal plan to check
