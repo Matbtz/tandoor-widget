@@ -57,7 +57,8 @@ object MealPlanUtils {
     fun buildRecipeUrl(tandoorUrl: String, recipe: Recipe?): String {
         val recipeId = getRecipeUrl(recipe)
         return if (recipeId != null) {
-            // Remove trailing slash from base URL to avoid double slashes
+            // Remove any trailing slashes from base URL to avoid creating URLs like
+            // "https://example.com//recipe/123/" or "https://example.com///recipe/123/"
             val baseUrl = tandoorUrl.trimEnd('/')
             "$baseUrl/recipe/$recipeId/"
         } else {

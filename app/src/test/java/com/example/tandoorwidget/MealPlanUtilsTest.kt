@@ -226,4 +226,18 @@ class MealPlanUtilsTest {
         // Should trim trailing slash from base URL to avoid double slashes
         assertEquals("https://tandoor.example.com/recipe/123/", result)
     }
+
+    @Test
+    fun buildRecipeUrl_withMultipleTrailingSlashesInBaseUrl_handlesCorrectly() {
+        // Given
+        val tandoorUrl = "https://tandoor.example.com///"
+        val recipe = Recipe(id = 456, name = "Test Recipe", image = null)
+
+        // When
+        val result = MealPlanUtils.buildRecipeUrl(tandoorUrl, recipe)
+
+        // Then
+        // Should trim all trailing slashes to avoid malformed URLs
+        assertEquals("https://tandoor.example.com/recipe/456/", result)
+    }
 }
