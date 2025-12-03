@@ -210,52 +210,52 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
         remoteViews.setTextViewText(R.id.day_of_week, groupedMeal.dayDisplay)
 
+        // Hide all recipe TextViews initially
+        val recipeIds = listOf(R.id.recipe_1, R.id.recipe_2, R.id.recipe_3, R.id.recipe_4, R.id.recipe_5)
+        recipeIds.forEach { id ->
+            remoteViews.setViewVisibility(id, View.GONE)
+        }
+
         if (groupedMeal.mealTypeName != null && groupedMeal.meals.isNotEmpty()) {
-            // Join all recipes for this meal type with " - " separator
-            val recipeNames = groupedMeal.meals.map { meal ->
-                val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title)
-                displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
-                    if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
-                }
-            }.joinToString(" - ")
-            
-            val mealText = "${groupedMeal.mealTypeName} : $recipeNames"
-            remoteViews.setTextViewText(R.id.meal, mealText)
-            
-            // Set up click intent for the first recipe (or base URL if no valid recipe)
             val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
             val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "")
             
-            // Validate URL before creating intent
-            if (!tandoorUrl.isNullOrEmpty() && 
-                (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://"))) {
-                try {
-                    // Try to get the first valid recipe ID
-                    val firstRecipeId = groupedMeal.meals
-                        .map { MealPlanUtils.getRecipeUrl(it.recipe) }
-                        .firstOrNull { it != null }
-                    
-                    // If we have a recipe ID, link to it; otherwise link to base URL
-                    val targetUrl = if (firstRecipeId != null) {
-                        "$tandoorUrl/recipe/$firstRecipeId"  // No trailing slash
-                    } else {
-                        tandoorUrl  // Link to base Tandoor URL for placeholder entries
+            // Show each recipe in its own card (up to 5 recipes)
+            groupedMeal.meals.take(5).forEachIndexed { index, meal ->
+                val recipeId = recipeIds[index]
+                val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title)
+                val truncatedName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
+                    if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
+                }
+                
+                // Set text and make visible
+                remoteViews.setTextViewText(recipeId, truncatedName)
+                remoteViews.setViewVisibility(recipeId, View.VISIBLE)
+                
+                // Set up click intent for this recipe
+                if (!tandoorUrl.isNullOrEmpty() && 
+                    (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://"))) {
+                    try {
+                        val recipeUrlId = MealPlanUtils.getRecipeUrl(meal.recipe)
+                        val targetUrl = if (recipeUrlId != null) {
+                            "$tandoorUrl/recipe/$recipeUrlId"
+                        } else {
+                            tandoorUrl
+                        }
+                        val uri = android.net.Uri.parse(targetUrl)
+                        
+                        if (uri != null && uri.scheme != null) {
+                            val fillInIntent = Intent(Intent.ACTION_VIEW)
+                            fillInIntent.data = uri
+                            remoteViews.setOnClickFillInIntent(recipeId, fillInIntent)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to create URL for recipe", e)
                     }
-                    val uri = android.net.Uri.parse(targetUrl)
-                    
-                    // Ensure URI is valid
-                    if (uri != null && uri.scheme != null) {
-                        val fillInIntent = Intent(Intent.ACTION_VIEW)
-                        fillInIntent.data = uri
-                        remoteViews.setOnClickFillInIntent(R.id.meal, fillInIntent)
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to create URL for grouped meal", e)
                 }
             }
-        } else {
-            remoteViews.setTextViewText(R.id.meal, "---")
         }
+        // Note: If no meals, all recipe views remain hidden (GONE), showing just the date
         
         return remoteViews
     }
