@@ -46,6 +46,11 @@
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.Dialog" />
 
+        <activity
+            android:name=".RecipeActionActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.Light.Dialog" />
+
     </application>
 
 </manifest>

@@ -120,7 +120,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
 
         // Set up PendingIntent template for clickable meal items
         // This template will be filled in by individual items in the RemoteViews
-        val clickIntent = Intent(context, MealPlanEditActivity::class.java)
+        val clickIntent = Intent(context, RecipeActionActivity::class.java)
         clickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         val clickPendingIntent = PendingIntent.getActivity(
             context,

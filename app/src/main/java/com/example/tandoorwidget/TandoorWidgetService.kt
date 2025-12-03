@@ -263,13 +263,18 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 }
                 remoteViews.setInt(recipeId, "setBackgroundResource", background)
                 
-                // Set up click intent to open edit activity for this meal
+                // Set up click intent with recipe URL and meal plan details
                 try {
                     val fillInIntent = Intent()
                     fillInIntent.putExtra("meal_plan_id", meal.id)
                     fillInIntent.putExtra("meal_name", displayName)
                     fillInIntent.putExtra("from_date", MealPlanUtils.safeParseDate(meal.from_date))
                     fillInIntent.putExtra("to_date", meal.to_date?.let { MealPlanUtils.safeParseDate(it) })
+                    // Add recipe URL for viewing in browser
+                    if (tandoorUrl != null) {
+                        val recipeUrl = MealPlanUtils.buildRecipeUrl(tandoorUrl, meal.recipe)
+                        fillInIntent.putExtra("recipe_url", recipeUrl)
+                    }
                     remoteViews.setOnClickFillInIntent(recipeId, fillInIntent)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to create click intent for meal", e)
