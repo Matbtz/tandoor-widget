@@ -135,15 +135,30 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
                 // Debug: Log each meal plan's date and URL
                 mealPlans?.forEachIndexed { index, meal ->
-                    val rawDate = meal.from_date
-                    val parsedDate = MealPlanUtils.safeParseDate(rawDate)
+                    val rawFromDate = meal.from_date
+                    val parsedFromDate = MealPlanUtils.safeParseDate(rawFromDate)
+                    val parsedToDate = meal.to_date?.let { MealPlanUtils.safeParseDate(it) }
                     // Sanitize display name for logging (truncate and remove newlines)
                     val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title).replace("\n", " ").take(50)
                     val recipeUrl = MealPlanUtils.buildRecipeUrl(tandoorUrl, meal.recipe)
-                    sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate' - URL: '$recipeUrl'")
+                    val dateRange = if (parsedToDate != null && parsedToDate != parsedFromDate) {
+                        "$parsedFromDate to $parsedToDate"
+                    } else {
+                        parsedFromDate
+                    }
+                    sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Date: $dateRange - URL: '$recipeUrl'")
                 }
 
-                val mealPlansByDate = mealPlans?.groupBy { MealPlanUtils.safeParseDate(it.from_date) } ?: emptyMap()
+                // Build a map of date -> meals, handling multi-day meals
+                val mealPlansByDate = mutableMapOf<String, MutableList<MealPlan>>()
+                mealPlans?.forEach { meal ->
+                    // For each date in the widget's date range, check if this meal applies
+                    dates.forEach { date ->
+                        if (MealPlanUtils.mealAppliesToDate(meal, date, sdf)) {
+                            mealPlansByDate.getOrPut(date) { mutableListOf() }.add(meal)
+                        }
+                    }
+                }
                 
                 sendLogBroadcast("Meal plans by date map keys: ${mealPlansByDate.keys.joinToString(", ")}")
                 
@@ -152,7 +167,8 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                     val meals = mealPlansByDate[date] ?: emptyList()
                     if (meals.isNotEmpty()) {
                         val displayNames = meals.joinToString(", ") { 
-                            MealPlanUtils.getDisplayName(it.recipe, it.title).replace("\n", " ").take(30) 
+                            val name = MealPlanUtils.getDisplayName(it.recipe, it.title).replace("\n", " ").take(30)
+                            if (MealPlanUtils.isMultiDayMeal(it)) "[$name]" else name
                         }
                         sendLogBroadcast("✓ Matched date '$date' to ${meals.size} meal(s): $displayNames")
                     } else {
@@ -225,8 +241,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             groupedMeal.meals.take(5).forEachIndexed { index, meal ->
                 val recipeId = recipeIds[index]
                 val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title)
-                val truncatedName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
-                    if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
+                
+                // Add visual indicator for multi-day meals
+                val prefix = if (MealPlanUtils.isMultiDayMeal(meal)) "📅 " else ""
+                val nameWithIndicator = prefix + displayName
+                
+                val truncatedName = nameWithIndicator.take(MAX_RECIPE_NAME_LENGTH + prefix.length).let { 
+                    if (nameWithIndicator.length > MAX_RECIPE_NAME_LENGTH + prefix.length) "$it..." else it 
                 }
                 
                 // Set text and make visible

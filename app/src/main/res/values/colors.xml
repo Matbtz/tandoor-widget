@@ -11,4 +11,5 @@
     <color name="meal_card_background">#FAF0E6</color>
     <color name="meal_card_border">#D4C5B9</color>
     <color name="sand_text">#C2B280</color>
+    <color name="multiday_indicator">#FF8C00</color>
 </resources>
