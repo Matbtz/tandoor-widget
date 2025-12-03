@@ -67,6 +67,8 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         }
     }
 
+    // Kept for potential future debugging needs, though currently disabled from widget UI
+    // The debug_view TextView is set to visibility="gone" in the layout
     private fun updateDebugView(context: Context, appWidgetId: Int, message: String?) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val views = RemoteViews(context.packageName, R.layout.tandoor_widget)

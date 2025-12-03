@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Default background for all single-day meal cards (lunch and dinner) -->
+<!-- For multi-day meals, see meal_card_multiday_background.xml -->
+<!-- For optional dinner-specific styling, see recipe_chip_dinner.xml -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <corners android:radius="20dp" />
