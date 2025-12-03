@@ -135,15 +135,30 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
                 // Debug: Log each meal plan's date and URL
                 mealPlans?.forEachIndexed { index, meal ->
-                    val rawDate = meal.from_date
-                    val parsedDate = MealPlanUtils.safeParseDate(rawDate)
+                    val rawFromDate = meal.from_date
+                    val parsedFromDate = MealPlanUtils.safeParseDate(rawFromDate)
+                    val parsedToDate = meal.to_date?.let { MealPlanUtils.safeParseDate(it) }
                     // Sanitize display name for logging (truncate and remove newlines)
                     val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title).replace("\n", " ").take(50)
                     val recipeUrl = MealPlanUtils.buildRecipeUrl(tandoorUrl, meal.recipe)
-                    sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate' - URL: '$recipeUrl'")
+                    val dateRange = if (parsedToDate != null && parsedToDate != parsedFromDate) {
+                        "$parsedFromDate to $parsedToDate"
+                    } else {
+                        parsedFromDate
+                    }
+                    sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Date: $dateRange - URL: '$recipeUrl'")
                 }
 
-                val mealPlansByDate = mealPlans?.groupBy { MealPlanUtils.safeParseDate(it.from_date) } ?: emptyMap()
+                // Build a map of date -> meals, handling multi-day meals
+                val mealPlansByDate = mutableMapOf<String, MutableList<MealPlan>>()
+                mealPlans?.forEach { meal ->
+                    // For each date in the widget's date range, check if this meal applies
+                    dates.forEach { date ->
+                        if (MealPlanUtils.mealAppliesToDate(meal, date, sdf)) {
+                            mealPlansByDate.getOrPut(date) { mutableListOf() }.add(meal)
+                        }
+                    }
+                }
                 
                 sendLogBroadcast("Meal plans by date map keys: ${mealPlansByDate.keys.joinToString(", ")}")
                 
@@ -152,7 +167,8 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                     val meals = mealPlansByDate[date] ?: emptyList()
                     if (meals.isNotEmpty()) {
                         val displayNames = meals.joinToString(", ") { 
-                            MealPlanUtils.getDisplayName(it.recipe, it.title).replace("\n", " ").take(30) 
+                            val name = MealPlanUtils.getDisplayName(it.recipe, it.title).replace("\n", " ").take(30)
+                            if (MealPlanUtils.isMultiDayMeal(it)) "[$name]" else name
                         }
                         sendLogBroadcast("✓ Matched date '$date' to ${meals.size} meal(s): $displayNames")
                     } else {
@@ -225,29 +241,30 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             groupedMeal.meals.take(5).forEachIndexed { index, meal ->
                 val recipeId = recipeIds[index]
                 val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title)
-                val truncatedName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
+                
+                // Add visual indicator for multi-day meals
+                val prefix = if (MealPlanUtils.isMultiDayMeal(meal)) "📅 " else ""
+                
+                // Truncate the display name first, then add prefix
+                val truncatedDisplayName = displayName.take(MAX_RECIPE_NAME_LENGTH).let { 
                     if (displayName.length > MAX_RECIPE_NAME_LENGTH) "$it..." else it 
                 }
+                val truncatedName = prefix + truncatedDisplayName
                 
                 // Set text and make visible
                 remoteViews.setTextViewText(recipeId, truncatedName)
                 remoteViews.setViewVisibility(recipeId, View.VISIBLE)
                 
-                // Set up click intent for this recipe
-                if (!tandoorUrl.isNullOrEmpty() && 
-                    (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://"))) {
-                    try {
-                        val targetUrl = MealPlanUtils.buildRecipeUrl(tandoorUrl, meal.recipe)
-                        val uri = android.net.Uri.parse(targetUrl)
-                        
-                        if (uri != null && uri.scheme != null) {
-                            val fillInIntent = Intent(Intent.ACTION_VIEW)
-                            fillInIntent.data = uri
-                            remoteViews.setOnClickFillInIntent(recipeId, fillInIntent)
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to create URL for recipe", e)
-                    }
+                // Set up click intent to open edit activity for this meal
+                try {
+                    val fillInIntent = Intent()
+                    fillInIntent.putExtra("meal_plan_id", meal.id)
+                    fillInIntent.putExtra("meal_name", displayName)
+                    fillInIntent.putExtra("from_date", MealPlanUtils.safeParseDate(meal.from_date))
+                    fillInIntent.putExtra("to_date", meal.to_date?.let { MealPlanUtils.safeParseDate(it) })
+                    remoteViews.setOnClickFillInIntent(recipeId, fillInIntent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to create click intent for meal", e)
                 }
             }
         }

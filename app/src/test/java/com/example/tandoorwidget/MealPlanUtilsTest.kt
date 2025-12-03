@@ -240,4 +240,177 @@ class MealPlanUtilsTest {
         // Should trim all trailing slashes to avoid malformed URLs
         assertEquals("https://tandoor.example.com/recipe/456/", result)
     }
+
+    @Test
+    fun isMultiDayMeal_withNullToDate_returnsFalse() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-01",
+            to_date = null,
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+
+        // When
+        val result = MealPlanUtils.isMultiDayMeal(mealPlan)
+
+        // Then
+        assertFalse(result)
+    }
+
+    @Test
+    fun isMultiDayMeal_withSameFromAndToDate_returnsFalse() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-01",
+            to_date = "2025-12-01",
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+
+        // When
+        val result = MealPlanUtils.isMultiDayMeal(mealPlan)
+
+        // Then
+        assertFalse(result)
+    }
+
+    @Test
+    fun isMultiDayMeal_withDifferentFromAndToDate_returnsTrue() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-01",
+            to_date = "2025-12-03",
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+
+        // When
+        val result = MealPlanUtils.isMultiDayMeal(mealPlan)
+
+        // Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun getMealSpanDays_withNullToDate_returnsOne() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-01",
+            to_date = null,
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When
+        val result = MealPlanUtils.getMealSpanDays(mealPlan, dateFormat)
+
+        // Then
+        assertEquals(1, result)
+    }
+
+    @Test
+    fun getMealSpanDays_withSameFromAndToDate_returnsOne() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-01",
+            to_date = "2025-12-01",
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When
+        val result = MealPlanUtils.getMealSpanDays(mealPlan, dateFormat)
+
+        // Then
+        assertEquals(1, result)
+    }
+
+    @Test
+    fun getMealSpanDays_withThreeDaySpan_returnsThree() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-01",
+            to_date = "2025-12-03",
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When
+        val result = MealPlanUtils.getMealSpanDays(mealPlan, dateFormat)
+
+        // Then
+        assertEquals(3, result)
+    }
+
+    @Test
+    fun mealAppliesToDate_singleDayMeal_onlyMatchesFromDate() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-02",
+            to_date = null,
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When/Then
+        assertTrue(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-02", dateFormat))
+        assertFalse(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-01", dateFormat))
+        assertFalse(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-03", dateFormat))
+    }
+
+    @Test
+    fun mealAppliesToDate_multiDayMeal_matchesAllDatesInRange() {
+        // Given
+        val mealType = MealType(id = 1, name = "Lunch")
+        val mealPlan = MealPlan(
+            id = 1,
+            title = "Test Meal",
+            recipe = null,
+            from_date = "2025-12-01",
+            to_date = "2025-12-03",
+            meal_type = mealType,
+            meal_type_name = "Lunch"
+        )
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When/Then
+        assertTrue(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-01", dateFormat))
+        assertTrue(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-02", dateFormat))
+        assertTrue(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-03", dateFormat))
+        assertFalse(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-11-30", dateFormat))
+        assertFalse(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-04", dateFormat))
+    }
 }

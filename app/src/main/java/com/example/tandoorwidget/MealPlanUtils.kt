@@ -115,4 +115,86 @@ object MealPlanUtils {
             dateString
         }
     }
+    
+    /**
+     * Check if a meal plan spans multiple days.
+     * 
+     * @param mealPlan The meal plan to check
+     * @return True if the meal spans multiple days, false otherwise
+     */
+    fun isMultiDayMeal(mealPlan: MealPlan): Boolean {
+        if (mealPlan.to_date == null) return false
+        
+        val fromDate = safeParseDate(mealPlan.from_date)
+        val toDate = safeParseDate(mealPlan.to_date)
+        
+        return fromDate != toDate
+    }
+    
+    /**
+     * Get the number of days a meal spans.
+     * 
+     * @param mealPlan The meal plan to check
+     * @param dateFormat SimpleDateFormat for parsing dates
+     * @return Number of days the meal spans (minimum 1)
+     */
+    fun getMealSpanDays(mealPlan: MealPlan, dateFormat: SimpleDateFormat): Int {
+        if (mealPlan.to_date == null) return 1
+        
+        return try {
+            val fromDate = safeParseDate(mealPlan.from_date)
+            val toDate = safeParseDate(mealPlan.to_date)
+            
+            val from = dateFormat.parse(fromDate)
+            val to = dateFormat.parse(toDate)
+            
+            if (from != null && to != null) {
+                val diff = to.time - from.time
+                val days = (diff / (1000 * 60 * 60 * 24)).toInt() + 1
+                if (days > 0) days else 1
+            } else {
+                1
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to calculate meal span days", e)
+            1
+        }
+    }
+    
+    /**
+     * Check if a meal plan should be displayed on a specific date.
+     * For multi-day meals, checks if the date falls within the range.
+     * 
+     * @param mealPlan The meal plan to check
+     * @param date The date to check (in YYYY-MM-DD format)
+     * @param dateFormat SimpleDateFormat for parsing dates
+     * @return True if the meal should be displayed on this date
+     */
+    fun mealAppliesToDate(mealPlan: MealPlan, date: String, dateFormat: SimpleDateFormat): Boolean {
+        val fromDate = safeParseDate(mealPlan.from_date)
+        
+        // If no to_date, only show on from_date
+        if (mealPlan.to_date == null) {
+            return fromDate == date
+        }
+        
+        val toDate = safeParseDate(mealPlan.to_date)
+        
+        return try {
+            val targetDate = dateFormat.parse(date)
+            val from = dateFormat.parse(fromDate)
+            val to = dateFormat.parse(toDate)
+            
+            if (targetDate != null && from != null && to != null) {
+                targetDate >= from && targetDate <= to
+            } else {
+                // Fallback to simple string comparison
+                date >= fromDate && date <= toDate
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to check if meal applies to date", e)
+            // Fallback to simple string comparison
+            date >= fromDate && date <= toDate
+        }
+    }
 }
