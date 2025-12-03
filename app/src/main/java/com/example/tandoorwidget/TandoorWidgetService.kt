@@ -242,6 +242,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                         } else {
                             tandoorUrl
                         }
+                        sendLogBroadcast("Recipe click URL: $targetUrl")
                         val uri = android.net.Uri.parse(targetUrl)
                         
                         if (uri != null && uri.scheme != null) {
