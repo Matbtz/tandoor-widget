@@ -3,16 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="6dp"
-    android:layout_marginBottom="2dp"
-    android:background="@drawable/meal_card_background">
+    android:padding="4dp"
+    android:layout_marginBottom="2dp">
 
     <TextView
         android:id="@+id/day_of_week"
         android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:gravity="start|center_vertical"
-        android:textColor="@android:color/white"
+        android:textColor="#333333"
         android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
@@ -22,7 +21,9 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="start|center_vertical"
-        android:textColor="@android:color/white"
+        android:textColor="#333333"
+        android:background="@drawable/meal_card_background"
+        android:padding="8dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
 </LinearLayout>
