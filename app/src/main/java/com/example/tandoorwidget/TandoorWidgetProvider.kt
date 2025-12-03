@@ -52,7 +52,8 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         } else if ("com.example.tandoorwidget.ACTION_REFRESH_WIDGET" == intent.action) {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                updateDebugView(context, appWidgetId, "Requesting refresh...")
+                // Debug text removed from widget UI - keeping internal logging only
+                // updateDebugView(context, appWidgetId, "Requesting refresh...")
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.calendar_view)
             }
@@ -60,11 +61,14 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             val logMessage = intent.getStringExtra("log_message")
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                updateDebugView(context, appWidgetId, logMessage)
+                // Debug text removed from widget UI - keeping internal logging only
+                // updateDebugView(context, appWidgetId, logMessage)
             }
         }
     }
 
+    // Kept for potential future debugging needs, though currently disabled from widget UI
+    // The debug_view TextView is set to visibility="gone" in the layout
     private fun updateDebugView(context: Context, appWidgetId: Int, message: String?) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
@@ -77,8 +81,8 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
         views.setViewVisibility(R.id.error_view, View.VISIBLE)
         views.setTextViewText(R.id.error_view, errorMessage ?: "Failed to load data.")
-        // Also update debug view
-        views.setTextViewText(R.id.debug_view, "Error: $errorMessage")
+        // Debug text removed from widget UI - keeping internal logging only
+        // views.setTextViewText(R.id.debug_view, "Error: $errorMessage")
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
