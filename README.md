@@ -1,3 +1,20 @@
+# Tandoor Widget
+
+An Android widget for displaying and managing your Tandoor meal plans.
+
+## Features
+
+- 📅 Display your weekly meal plan (Saturday to Friday)
+- 🔄 Real-time synchronization with your Tandoor instance
+- 📊 Multi-day recipe support - extend recipes across multiple days
+- ✏️ Edit meal plans directly from the widget:
+  - Move recipes between days
+  - Extend recipes to span multiple days
+  - Quick access to edit any meal plan entry
+- 🐛 Comprehensive debugging and logging features
+
+For detailed information about the multi-day meal feature, see [MULTI_DAY_MEALS_GUIDE.md](MULTI_DAY_MEALS_GUIDE.md).
+
 ## Build Configuration
 
 This project requires the Android SDK to be configured.
