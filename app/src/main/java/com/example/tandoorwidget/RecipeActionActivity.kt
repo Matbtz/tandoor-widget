@@ -45,7 +45,7 @@ class RecipeActionActivity : Activity() {
                     startActivity(browserIntent)
                     finish()
                 } catch (e: Exception) {
-                    Toast.makeText(this, "Failed to open browser: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Unable to open recipe in browser", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
