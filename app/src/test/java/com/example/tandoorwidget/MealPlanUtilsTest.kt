@@ -413,4 +413,60 @@ class MealPlanUtilsTest {
         assertFalse(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-11-30", dateFormat))
         assertFalse(MealPlanUtils.mealAppliesToDate(mealPlan, "2025-12-04", dateFormat))
     }
+
+    @Test
+    fun formatDateRangeSpan_withValidDates_returnsFormattedRange() {
+        // Given
+        val fromDate = "2025-12-07"  // Saturday
+        val toDate = "2025-12-09"    // Monday
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When
+        val result = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, inputFormat)
+
+        // Then
+        assertEquals("Sat-Mon", result)
+    }
+
+    @Test
+    fun formatDateRangeSpan_withSameDayRange_returnsFormattedRange() {
+        // Given
+        val fromDate = "2025-12-07"  // Saturday
+        val toDate = "2025-12-07"    // Same Saturday
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When
+        val result = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, inputFormat)
+
+        // Then
+        assertEquals("Sat-Sat", result)
+    }
+
+    @Test
+    fun formatDateRangeSpan_withInvalidFromDate_returnsEmptyString() {
+        // Given
+        val fromDate = "invalid-date"
+        val toDate = "2025-12-09"
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When
+        val result = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, inputFormat)
+
+        // Then
+        assertEquals("", result)
+    }
+
+    @Test
+    fun formatDateRangeSpan_withInvalidToDate_returnsEmptyString() {
+        // Given
+        val fromDate = "2025-12-07"
+        val toDate = "invalid-date"
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        // When
+        val result = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, inputFormat)
+
+        // Then
+        assertEquals("", result)
+    }
 }
