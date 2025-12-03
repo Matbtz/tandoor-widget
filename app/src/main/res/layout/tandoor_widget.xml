@@ -22,7 +22,8 @@
             android:text="🍽️ Meal Plan"
             android:textColor="@color/text_primary"
             android:textSize="18sp"
-            android:fontFamily="sans-serif-medium" />
+            android:fontFamily="sans-serif-medium"
+            android:contentDescription="Meal Plan Widget" />
 
         <Button
             android:id="@+id/refresh_button"
@@ -34,7 +35,7 @@
             android:text="↻"
             android:textSize="20sp"
             android:textColor="@color/accent_primary"
-            android:contentDescription="Refresh"
+            android:contentDescription="Refresh meal plan"
             android:padding="8dp" />
     </LinearLayout>
 
