@@ -1,21 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="4dp"
-    android:layout_marginBottom="2dp"
+    android:padding="8dp"
     android:gravity="center_vertical">
 
+    <!-- Modern day indicator column with rounded background -->
     <TextView
         android:id="@+id/day_of_week"
-        android:layout_width="80dp"
+        android:layout_width="85dp"
         android:layout_height="wrap_content"
-        android:gravity="start|center_vertical"
-        android:textColor="@color/sand_text"
-        android:textStyle="bold"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+        android:gravity="center"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium"
+        android:background="@drawable/day_indicator_bg"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:layout_marginEnd="12dp" />
 
+    <!-- Recipe chips container -->
     <LinearLayout
         android:id="@+id/recipes_container"
         android:layout_width="0dp"
@@ -29,10 +36,13 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
-            android:textColor="#333333"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:visibility="gone" />
 
         <TextView
@@ -41,10 +51,13 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
-            android:textColor="#333333"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:visibility="gone" />
 
         <TextView
@@ -53,10 +66,13 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
-            android:textColor="#333333"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:visibility="gone" />
 
         <TextView
@@ -65,10 +81,13 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
-            android:textColor="#333333"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:visibility="gone" />
 
         <TextView
@@ -77,10 +96,13 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
-            android:textColor="#333333"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:visibility="gone" />
 
     </LinearLayout>

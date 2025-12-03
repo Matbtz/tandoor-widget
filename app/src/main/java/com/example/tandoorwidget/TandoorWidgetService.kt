@@ -202,11 +202,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     private fun sendLogBroadcast(message: String) {
+        // Keep internal logging for debugging, but don't send to widget UI
         Log.d(TAG, message)
-        val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        intent.putExtra("log_message", message)
-        context.sendBroadcast(intent)
+        // Commented out to remove debug text from widget display
+        // val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
+        // intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        // intent.putExtra("log_message", message)
+        // context.sendBroadcast(intent)
     }
 
     private fun sendErrorBroadcast(message: String, throwable: Throwable? = null) {
