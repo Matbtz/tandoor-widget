@@ -173,4 +173,71 @@ class MealPlanUtilsTest {
         // Then
         assertEquals("invalid-date", result)
     }
+
+    @Test
+    fun buildRecipeUrl_withValidRecipe_returnsFullUrlWithTrailingSlash() {
+        // Given
+        val tandoorUrl = "https://tandoor.example.com"
+        val recipe = Recipe(id = 42, name = "Test Recipe", image = null)
+
+        // When
+        val result = MealPlanUtils.buildRecipeUrl(tandoorUrl, recipe)
+
+        // Then
+        assertEquals("https://tandoor.example.com/recipe/42/", result)
+    }
+
+    @Test
+    fun buildRecipeUrl_withNullRecipe_returnsBaseUrl() {
+        // Given
+        val tandoorUrl = "https://tandoor.example.com"
+        val recipe: Recipe? = null
+
+        // When
+        val result = MealPlanUtils.buildRecipeUrl(tandoorUrl, recipe)
+
+        // Then
+        assertEquals("https://tandoor.example.com", result)
+    }
+
+    @Test
+    fun buildRecipeUrl_withInvalidRecipeId_returnsBaseUrl() {
+        // Given
+        val tandoorUrl = "https://tandoor.example.com"
+        val recipe = Recipe(id = 0, name = "Test Recipe", image = null)
+
+        // When
+        val result = MealPlanUtils.buildRecipeUrl(tandoorUrl, recipe)
+
+        // Then
+        assertEquals("https://tandoor.example.com", result)
+    }
+
+    @Test
+    fun buildRecipeUrl_withTrailingSlashInBaseUrl_handlesCorrectly() {
+        // Given
+        val tandoorUrl = "https://tandoor.example.com/"
+        val recipe = Recipe(id = 123, name = "Test Recipe", image = null)
+
+        // When
+        val result = MealPlanUtils.buildRecipeUrl(tandoorUrl, recipe)
+
+        // Then
+        // Should trim trailing slash from base URL to avoid double slashes
+        assertEquals("https://tandoor.example.com/recipe/123/", result)
+    }
+
+    @Test
+    fun buildRecipeUrl_withMultipleTrailingSlashesInBaseUrl_handlesCorrectly() {
+        // Given
+        val tandoorUrl = "https://tandoor.example.com///"
+        val recipe = Recipe(id = 456, name = "Test Recipe", image = null)
+
+        // When
+        val result = MealPlanUtils.buildRecipeUrl(tandoorUrl, recipe)
+
+        // Then
+        // Should trim all trailing slashes to avoid malformed URLs
+        assertEquals("https://tandoor.example.com/recipe/456/", result)
+    }
 }

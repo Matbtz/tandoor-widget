@@ -133,13 +133,14 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 val count = mealPlans?.size ?: 0
                 sendLogBroadcast("Success: Received $count meal plans")
 
-                // Debug: Log each meal plan's date
+                // Debug: Log each meal plan's date and URL
                 mealPlans?.forEachIndexed { index, meal ->
                     val rawDate = meal.from_date
                     val parsedDate = MealPlanUtils.safeParseDate(rawDate)
                     // Sanitize display name for logging (truncate and remove newlines)
                     val displayName = MealPlanUtils.getDisplayName(meal.recipe, meal.title).replace("\n", " ").take(50)
-                    sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate'")
+                    val recipeUrl = MealPlanUtils.buildRecipeUrl(tandoorUrl, meal.recipe)
+                    sendLogBroadcast("Meal #${index + 1}: '${displayName}' - Raw date: '$rawDate' -> Parsed: '$parsedDate' - URL: '$recipeUrl'")
                 }
 
                 val mealPlansByDate = mealPlans?.groupBy { MealPlanUtils.safeParseDate(it.from_date) } ?: emptyMap()
@@ -236,13 +237,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 if (!tandoorUrl.isNullOrEmpty() && 
                     (tandoorUrl.startsWith("http://") || tandoorUrl.startsWith("https://"))) {
                     try {
-                        val recipeUrlId = MealPlanUtils.getRecipeUrl(meal.recipe)
-                        val targetUrl = if (recipeUrlId != null) {
-                            "$tandoorUrl/recipe/$recipeUrlId"
-                        } else {
-                            tandoorUrl
-                        }
-                        sendLogBroadcast("Recipe click URL: $targetUrl")
+                        val targetUrl = MealPlanUtils.buildRecipeUrl(tandoorUrl, meal.recipe)
                         val uri = android.net.Uri.parse(targetUrl)
                         
                         if (uri != null && uri.scheme != null) {
