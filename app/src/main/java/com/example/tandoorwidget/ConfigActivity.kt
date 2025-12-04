@@ -25,11 +25,11 @@ class ConfigActivity : Activity() {
             val widgetId = intent?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             if (widgetId == appWidgetId) {
                 when (intent?.action) {
-                    "com.example.tandoorwidget.ACTION_WIDGET_LOG" -> {
+                    Constants.ACTION_WIDGET_LOG -> {
                         val message = intent.getStringExtra("log_message") ?: ""
                         appendLog("[LOG] $message")
                     }
-                    "com.example.tandoorwidget.ACTION_WIDGET_ERROR" -> {
+                    Constants.ACTION_WIDGET_ERROR -> {
                         val message = intent.getStringExtra("error_message") ?: ""
                         appendLog("[ERROR] $message")
                     }
@@ -40,6 +40,11 @@ class ConfigActivity : Activity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Set default result to CANCELED for initial widget configuration
+        // This ensures that if user backs out without saving, Android won't add the widget
+        setResult(RESULT_CANCELED)
+        
         setContentView(R.layout.activity_config)
 
         val tandoorUrlEditText = findViewById<EditText>(R.id.tandoor_url)
@@ -73,8 +78,8 @@ class ConfigActivity : Activity() {
         // Register broadcast receivers for logs
         try {
             val logFilter = IntentFilter().apply {
-                addAction("com.example.tandoorwidget.ACTION_WIDGET_LOG")
-                addAction("com.example.tandoorwidget.ACTION_WIDGET_ERROR")
+                addAction(Constants.ACTION_WIDGET_LOG)
+                addAction(Constants.ACTION_WIDGET_ERROR)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 registerReceiver(logReceiver, logFilter, Context.RECEIVER_NOT_EXPORTED)
@@ -146,7 +151,25 @@ class ConfigActivity : Activity() {
                 return@setOnClickListener
             }
 
+            if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+                Toast.makeText(this, "Error: Invalid widget ID", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            // Check if this is initial configuration or reconfiguration BEFORE saving
+            // Initial config = no existing configuration in SharedPreferences
+            val isInitialConfig = !Constants.isWidgetConfigured(this, appWidgetId)
+            
             val sharedPrefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+
+            // Clear logs before saving
+            logs.clear()
+            logs.append("=== SAVING CONFIGURATION ===\n")
+            logs.append("Widget ID: $appWidgetId\n")
+            logs.append("Initial configuration: $isInitialConfig\n")
+            logs.append("Tandoor URL: $tandoorUrl\n")
+            logs.append("API Key: ***${apiKey.length} characters***\n\n")
+            debugLogsTextView.text = logs.toString()
 
             with(sharedPrefs.edit()) {
                 putString("tandoor_url_$appWidgetId", tandoorUrl)
@@ -154,18 +177,32 @@ class ConfigActivity : Activity() {
                 apply()
             }
 
-            // Clear logs before refresh
-            logs.clear()
-            logs.append("Widget configuration saved. Refreshing...\n\n")
-            debugLogsTextView.text = logs.toString()
+            appendLog("Configuration saved to SharedPreferences")
+            appendLog("Triggering widget update via onUpdate()...\n")
 
             val appWidgetManager = AppWidgetManager.getInstance(this)
+            
+            val provider = android.content.ComponentName(this, TandoorWidgetProvider::class.java)
+            val widgetIds = appWidgetManager.getAppWidgetIds(provider)
+            appendLog("Active widget IDs: ${widgetIds.joinToString()}")
+            
+            // Always try to update the widget
             TandoorWidgetProvider().onUpdate(this, appWidgetManager, intArrayOf(appWidgetId))
 
-            Toast.makeText(this, "Configuration saved! Widget updating... Check logs below.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Configuration saved! Widget updating...", Toast.LENGTH_SHORT).show()
             
-            // Note: We don't finish() here anymore to allow viewing logs
-            // The user can press back or home button when done viewing logs
+            // For initial configuration, we MUST call setResult and finish
+            // Otherwise Android thinks configuration failed and doesn't add the widget
+            if (isInitialConfig) {
+                appendLog("Completing initial configuration...")
+                val resultValue = Intent()
+                resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                setResult(RESULT_OK, resultValue)
+                finish()
+            } else {
+                // For reconfiguration, show logs and let user navigate away manually
+                appendLog("\nConfiguration complete. You can view logs above or tap Done.")
+            }
         }
     }
     

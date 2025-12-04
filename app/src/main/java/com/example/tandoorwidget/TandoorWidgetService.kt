@@ -39,6 +39,9 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     )
 
     override fun onCreate() {
+        Log.d(TAG, "TandoorWidgetRemoteViewsFactory onCreate() for widget $appWidgetId")
+        sendLogBroadcast("RemoteViewsFactory created for widget $appWidgetId")
+        
         // Initialize dates immediately so they show even before API call
         val calendar = Calendar.getInstance()
         // Find the start date (Saturday)
@@ -51,6 +54,8 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             calendar.add(Calendar.DATE, 1)
             date
         }
+        
+        sendLogBroadcast("Initialized week view: ${dates.first()} to ${dates.last()}")
         
         // Initialize with empty meal lists
         dailyMeals.clear()
@@ -84,17 +89,29 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     override fun onDataSetChanged() {
-        sendLogBroadcast("=== Starting data refresh ===")
-        val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-        val apiKey = sharedPrefs.getString("api_key_$appWidgetId", "") ?: ""
-        val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "") ?: ""
-
-        if (tandoorUrl.isBlank() || apiKey.isBlank()) {
-            sendLogBroadcast("Error: Missing URL or API Key")
+        sendLogBroadcast("=== Starting data refresh for widget $appWidgetId ===")
+        
+        if (!Constants.isWidgetConfigured(context, appWidgetId)) {
+            val (url, key) = Constants.getWidgetConfig(context, appWidgetId)
+            val errorMsg = Constants.buildConfigErrorMessage(url != null, key != null)
+            sendLogBroadcast(errorMsg)
+            sendErrorBroadcast(errorMsg, WidgetErrorType.MISSING_CONFIGURATION)
+            
+            // Still initialize dates structure even without config, so getViewAt() doesn't fail
+            initializeEmptyWeekDates()
+            return
+        }
+        
+        val (tandoorUrl, apiKey) = Constants.getWidgetConfig(context, appWidgetId)
+        if (tandoorUrl == null || apiKey == null) {
+            // This shouldn't happen since we checked above, but being defensive
+            sendErrorBroadcast("Configuration check passed but values are null", WidgetErrorType.UNKNOWN_ERROR)
             return
         }
 
-        sendLogBroadcast("Base URL: $tandoorUrl")
+        sendLogBroadcast("Configuration loaded:")
+        sendLogBroadcast("  Base URL: $tandoorUrl")
+        sendLogBroadcast("  API Key: ***${apiKey.length} characters***")
 
         // Calculate dates first so we can show them even on error
         val calendar = Calendar.getInstance()
@@ -185,14 +202,26 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 sendLogBroadcast("=== Data refresh complete: ${dailyMeals.count { it.second.isNotEmpty() }} meals matched ===")
             } else {
                 val errorBody = response.errorBody()?.string() ?: "Unknown error"
-                sendErrorBroadcast("API Error ${response.code()}: $errorBody")
+                sendErrorBroadcast(
+                    "API Error ${response.code()}: $errorBody",
+                    WidgetErrorType.API_ERROR
+                )
                 // Still show dates even on error
                 dailyMeals.clear()
                 dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
                 updateFlattenedMeals()
             }
         } catch (e: Exception) {
-            sendErrorBroadcast("Exception during API call: ${e.javaClass.simpleName} - ${e.message}", e)
+            val errorType = when {
+                e is java.net.UnknownHostException || e is java.net.ConnectException -> WidgetErrorType.NETWORK_ERROR
+                e is com.google.gson.JsonSyntaxException -> WidgetErrorType.PARSE_ERROR
+                else -> WidgetErrorType.UNKNOWN_ERROR
+            }
+            sendErrorBroadcast(
+                "Exception during API call: ${e.javaClass.simpleName} - ${e.message}",
+                errorType,
+                e
+            )
             e.printStackTrace()
             // Still show dates even on exception
             dailyMeals.clear()
@@ -202,20 +231,25 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     private fun sendLogBroadcast(message: String) {
-        // Keep internal logging for debugging, but don't send to widget UI
+        // Log to Android logcat for debugging
         Log.d(TAG, message)
-        // Commented out to remove debug text from widget display
-        // val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
-        // intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        // intent.putExtra("log_message", message)
-        // context.sendBroadcast(intent)
+        // Send to ConfigActivity debug popup (not shown on widget UI)
+        val intent = Intent(Constants.ACTION_WIDGET_LOG)
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        intent.putExtra("log_message", message)
+        context.sendBroadcast(intent)
     }
 
-    private fun sendErrorBroadcast(message: String, throwable: Throwable? = null) {
+    private fun sendErrorBroadcast(
+        message: String, 
+        errorType: WidgetErrorType = WidgetErrorType.UNKNOWN_ERROR,
+        throwable: Throwable? = null
+    ) {
         Log.e(TAG, message, throwable)
-        val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_ERROR")
+        val intent = Intent(Constants.ACTION_WIDGET_ERROR)
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         intent.putExtra("error_message", message)
+        intent.putExtra("error_type", errorType.name)
         context.sendBroadcast(intent)
     }
 
@@ -224,12 +258,20 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     override fun getCount(): Int {
-        return flattenedMeals.size
+        val count = flattenedMeals.size
+        Log.d(TAG, "getCount() returning $count items")
+        return count
     }
 
     override fun getViewAt(position: Int): RemoteViews {
-        val remoteViews = RemoteViews(context.packageName, R.layout.widget_day_item)
-        val groupedMeal = flattenedMeals[position]
+        try {
+            if (position < 0 || position >= flattenedMeals.size) {
+                Log.e(TAG, "getViewAt: Invalid position $position (size: ${flattenedMeals.size})")
+                return createEmptyDayView()
+            }
+            
+            val remoteViews = RemoteViews(context.packageName, R.layout.widget_day_item)
+            val groupedMeal = flattenedMeals[position]
 
         remoteViews.setTextViewText(R.id.day_of_week, groupedMeal.dayDisplay)
 
@@ -283,9 +325,39 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 }
             }
         }
-        // Note: If no meals, all recipe views remain hidden (GONE), showing just the date
-        
-        return remoteViews
+            // Note: If no meals, all recipe views remain hidden (GONE), showing just the date
+            
+            return remoteViews
+        } catch (e: Exception) {
+            Log.e(TAG, "getViewAt: Exception at position $position", e)
+            sendErrorBroadcast(
+                "Failed to create view at position $position: ${e.message}",
+                WidgetErrorType.UNKNOWN_ERROR,
+                e
+            )
+            return createErrorDayView()
+        }
+    }
+    
+    private fun createEmptyDayView(): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_day_item)
+        views.setTextViewText(R.id.day_of_week, "")
+        hideAllRecipeViews(views)
+        return views
+    }
+    
+    private fun createErrorDayView(): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_day_item)
+        views.setTextViewText(R.id.day_of_week, "Error")
+        hideAllRecipeViews(views)
+        return views
+    }
+    
+    private fun hideAllRecipeViews(views: RemoteViews) {
+        val recipeIds = listOf(R.id.recipe_1, R.id.recipe_2, R.id.recipe_3, R.id.recipe_4, R.id.recipe_5)
+        recipeIds.forEach { id ->
+            views.setViewVisibility(id, View.GONE)
+        }
     }
 
     override fun getLoadingView(): RemoteViews? {
@@ -302,5 +374,20 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
     override fun hasStableIds(): Boolean {
         return true
+    }
+    
+    private fun initializeEmptyWeekDates() {
+        val calendar = Calendar.getInstance()
+        while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+            calendar.add(Calendar.DATE, -1)
+        }
+        val dates = (0..6).map {
+            val date = sdf.format(calendar.time)
+            calendar.add(Calendar.DATE, 1)
+            date
+        }
+        dailyMeals.clear()
+        dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
+        updateFlattenedMeals()
     }
 }
