@@ -98,6 +98,21 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             val errorMsg = "Missing configuration - URL: ${tandoorUrl.isNotBlank()}, API Key: ${apiKey.isNotBlank()}"
             sendLogBroadcast(errorMsg)
             sendErrorBroadcast(errorMsg)
+            
+            // Still initialize dates structure even without config, so getViewAt() doesn't fail
+            val calendar = Calendar.getInstance()
+            while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+                calendar.add(Calendar.DATE, -1)
+            }
+            val dates = (0..6).map {
+                val date = sdf.format(calendar.time)
+                calendar.add(Calendar.DATE, 1)
+                date
+            }
+            dailyMeals.clear()
+            dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
+            updateFlattenedMeals()
+            
             return
         }
 
@@ -233,12 +248,21 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     override fun getCount(): Int {
-        return flattenedMeals.size
+        val count = flattenedMeals.size
+        Log.d(TAG, "getCount() returning $count items")
+        return count
     }
 
     override fun getViewAt(position: Int): RemoteViews {
-        val remoteViews = RemoteViews(context.packageName, R.layout.widget_day_item)
-        val groupedMeal = flattenedMeals[position]
+        try {
+            if (position < 0 || position >= flattenedMeals.size) {
+                Log.e(TAG, "getViewAt: Invalid position $position (size: ${flattenedMeals.size})")
+                // Return a minimal empty view
+                return RemoteViews(context.packageName, R.layout.widget_day_item)
+            }
+            
+            val remoteViews = RemoteViews(context.packageName, R.layout.widget_day_item)
+            val groupedMeal = flattenedMeals[position]
 
         remoteViews.setTextViewText(R.id.day_of_week, groupedMeal.dayDisplay)
 
@@ -292,9 +316,17 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 }
             }
         }
-        // Note: If no meals, all recipe views remain hidden (GONE), showing just the date
-        
-        return remoteViews
+            // Note: If no meals, all recipe views remain hidden (GONE), showing just the date
+            
+            return remoteViews
+        } catch (e: Exception) {
+            Log.e(TAG, "getViewAt: Exception at position $position", e)
+            sendErrorBroadcast("Failed to create view at position $position: ${e.message}", e)
+            // Return a minimal view to prevent widget crash
+            val errorViews = RemoteViews(context.packageName, R.layout.widget_day_item)
+            errorViews.setTextViewText(R.id.day_of_week, "Error")
+            return errorViews
+        }
     }
 
     override fun getLoadingView(): RemoteViews? {
