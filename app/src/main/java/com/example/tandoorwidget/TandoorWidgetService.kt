@@ -90,12 +90,10 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
     override fun onDataSetChanged() {
         sendLogBroadcast("=== Starting data refresh for widget $appWidgetId ===")
-        val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-        val apiKey = sharedPrefs.getString("api_key_$appWidgetId", "") ?: ""
-        val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "") ?: ""
-
-        if (tandoorUrl.isBlank() || apiKey.isBlank()) {
-            val errorMsg = buildConfigErrorMessage(tandoorUrl.isNotBlank(), apiKey.isNotBlank())
+        
+        if (!Constants.isWidgetConfigured(context, appWidgetId)) {
+            val (url, key) = Constants.getWidgetConfig(context, appWidgetId)
+            val errorMsg = buildConfigErrorMessage(url != null, key != null)
             sendLogBroadcast(errorMsg)
             sendErrorBroadcast(errorMsg, WidgetErrorType.MISSING_CONFIGURATION)
             
@@ -113,6 +111,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
             updateFlattenedMeals()
             
+            return
+        }
+        
+        val (tandoorUrl, apiKey) = Constants.getWidgetConfig(context, appWidgetId)
+        if (tandoorUrl == null || apiKey == null) {
+            // This shouldn't happen since we checked above, but being defensive
+            sendErrorBroadcast("Configuration check passed but values are null", WidgetErrorType.UNKNOWN_ERROR)
             return
         }
 

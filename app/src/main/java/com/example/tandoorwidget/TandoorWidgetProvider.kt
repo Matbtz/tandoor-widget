@@ -19,26 +19,26 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         Log.d(TAG, "onUpdate called with ${appWidgetIds.size} widget(s): ${appWidgetIds.joinToString()}")
-        sendLogBroadcast(context, appWidgetIds, "=== Widget onUpdate called ===")
+        sendLogBroadcast(context, *appWidgetIds, message = "=== Widget onUpdate called ===")
         
         for (appWidgetId in appWidgetIds) {
-            val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
-            val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", null)
-            val apiKey = sharedPrefs.getString("api_key_$appWidgetId", null)
+            val isConfigured = Constants.isWidgetConfigured(context, appWidgetId)
             
-            Log.d(TAG, "Widget $appWidgetId - URL configured: ${tandoorUrl != null}, API key configured: ${apiKey != null}")
+            Log.d(TAG, "Widget $appWidgetId - Configured: $isConfigured")
             
-            if (tandoorUrl == null || apiKey == null) {
-                Log.w(TAG, "Widget $appWidgetId - Missing configuration (URL: ${tandoorUrl != null}, Key: ${apiKey != null})")
-                sendLogBroadcast(context, appWidgetId, "Missing configuration - URL: ${tandoorUrl != null}, API Key: ${apiKey != null}")
+            if (!isConfigured) {
+                val (url, key) = Constants.getWidgetConfig(context, appWidgetId)
+                Log.w(TAG, "Widget $appWidgetId - Missing configuration (URL: ${url != null}, Key: ${key != null})")
+                sendLogBroadcast(context, appWidgetId, "Missing configuration - URL: ${url != null}, API Key: ${key != null}")
                 
                 // Show a helpful message instead of opening config activity
                 updateConfigNeededView(context, appWidgetId)
             } else {
+                val (url, key) = Constants.getWidgetConfig(context, appWidgetId)
                 Log.d(TAG, "Widget $appWidgetId - Configuration found, updating widget")
                 sendLogBroadcast(context, appWidgetId, "Configuration found - updating widget...")
-                sendLogBroadcast(context, appWidgetId, "URL: $tandoorUrl")
-                sendLogBroadcast(context, appWidgetId, "API Key: ***${apiKey.length} chars***")
+                sendLogBroadcast(context, appWidgetId, "URL: $url")
+                sendLogBroadcast(context, appWidgetId, "API Key: ***${key?.length ?: 0} chars***")
                 updateAppWidget(context, appWidgetManager, appWidgetId)
             }
         }
@@ -56,17 +56,14 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         }
     }
     
-    private fun sendLogBroadcast(context: Context, appWidgetId: Int, message: String) {
-        Log.d(TAG, "Widget $appWidgetId: $message")
-        val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        intent.putExtra("log_message", message)
-        context.sendBroadcast(intent)
-    }
-    
-    private fun sendLogBroadcast(context: Context, appWidgetIds: IntArray, message: String) {
-        Log.d(TAG, message)
+    private fun sendLogBroadcast(context: Context, vararg appWidgetIds: Int, message: String) {
+        if (appWidgetIds.isEmpty()) {
+            Log.d(TAG, message)
+            return
+        }
+        
         for (appWidgetId in appWidgetIds) {
+            Log.d(TAG, "Widget $appWidgetId: $message")
             val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
             intent.putExtra("log_message", message)
