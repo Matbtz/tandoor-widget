@@ -39,6 +39,9 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     )
 
     override fun onCreate() {
+        Log.d(TAG, "TandoorWidgetRemoteViewsFactory onCreate() for widget $appWidgetId")
+        sendLogBroadcast("RemoteViewsFactory created for widget $appWidgetId")
+        
         // Initialize dates immediately so they show even before API call
         val calendar = Calendar.getInstance()
         // Find the start date (Saturday)
@@ -51,6 +54,8 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             calendar.add(Calendar.DATE, 1)
             date
         }
+        
+        sendLogBroadcast("Initialized week view: ${dates.first()} to ${dates.last()}")
         
         // Initialize with empty meal lists
         dailyMeals.clear()
@@ -84,17 +89,21 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     override fun onDataSetChanged() {
-        sendLogBroadcast("=== Starting data refresh ===")
+        sendLogBroadcast("=== Starting data refresh for widget $appWidgetId ===")
         val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
         val apiKey = sharedPrefs.getString("api_key_$appWidgetId", "") ?: ""
         val tandoorUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", "") ?: ""
 
         if (tandoorUrl.isBlank() || apiKey.isBlank()) {
-            sendLogBroadcast("Error: Missing URL or API Key")
+            val errorMsg = "Missing configuration - URL: ${tandoorUrl.isNotBlank()}, API Key: ${apiKey.isNotBlank()}"
+            sendLogBroadcast(errorMsg)
+            sendErrorBroadcast(errorMsg)
             return
         }
 
-        sendLogBroadcast("Base URL: $tandoorUrl")
+        sendLogBroadcast("Configuration loaded:")
+        sendLogBroadcast("  Base URL: $tandoorUrl")
+        sendLogBroadcast("  API Key: ***${apiKey.length} characters***")
 
         // Calculate dates first so we can show them even on error
         val calendar = Calendar.getInstance()
@@ -202,13 +211,13 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
 
     private fun sendLogBroadcast(message: String) {
-        // Keep internal logging for debugging, but don't send to widget UI
+        // Log to Android logcat for debugging
         Log.d(TAG, message)
-        // Commented out to remove debug text from widget display
-        // val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
-        // intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        // intent.putExtra("log_message", message)
-        // context.sendBroadcast(intent)
+        // Send to ConfigActivity debug popup (not shown on widget UI)
+        val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        intent.putExtra("log_message", message)
+        context.sendBroadcast(intent)
     }
 
     private fun sendErrorBroadcast(message: String, throwable: Throwable? = null) {

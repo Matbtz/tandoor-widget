@@ -148,16 +148,22 @@ class ConfigActivity : Activity() {
 
             val sharedPrefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
 
+            // Clear logs before saving
+            logs.clear()
+            logs.append("=== SAVING CONFIGURATION ===\n")
+            logs.append("Widget ID: $appWidgetId\n")
+            logs.append("Tandoor URL: $tandoorUrl\n")
+            logs.append("API Key: ***${apiKey.length} characters***\n\n")
+            debugLogsTextView.text = logs.toString()
+
             with(sharedPrefs.edit()) {
                 putString("tandoor_url_$appWidgetId", tandoorUrl)
                 putString("api_key_$appWidgetId", apiKey)
                 apply()
             }
 
-            // Clear logs before refresh
-            logs.clear()
-            logs.append("Widget configuration saved. Refreshing...\n\n")
-            debugLogsTextView.text = logs.toString()
+            appendLog("Configuration saved to SharedPreferences")
+            appendLog("Triggering widget update...\n")
 
             val appWidgetManager = AppWidgetManager.getInstance(this)
             TandoorWidgetProvider().onUpdate(this, appWidgetManager, intArrayOf(appWidgetId))
