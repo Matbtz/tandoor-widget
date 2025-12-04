@@ -4,46 +4,32 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="8dp">
 
-    <!-- Modern Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingBottom="12dp">
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/widget_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="🍽️ Meal Plan"
-            android:textColor="@color/text_primary"
-            android:textSize="18sp"
-            android:fontFamily="sans-serif-medium"
-            android:contentDescription="Meal Plan Widget" />
+            android:text="Tandoor Meal Plan"
+            android:textColor="@android:color/white"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
         <ImageButton
             android:id="@+id/refresh_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/circular_button_bg"
-            android:src="@drawable/ic_refresh"
-            android:scaleType="centerInside"
-            android:contentDescription="Refresh meal plan"
-            android:padding="8dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_rotate"
+            android:tint="@android:color/white" />
     </LinearLayout>
 
-    <!-- Subtle divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider_light"
-        android:layout_marginBottom="12dp" />
-
-    <!-- Debug view - hidden by default -->
     <TextView
         android:id="@+id/debug_view"
         android:layout_width="match_parent"
@@ -51,7 +37,7 @@
         android:text="Ready"
         android:textColor="#FF8888"
         android:textSize="10sp"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -63,8 +49,7 @@
             android:id="@+id/calendar_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:numColumns="1"
-            android:verticalSpacing="8dp" />
+            android:numColumns="1" />
 
         <TextView
             android:id="@+id/error_view"
@@ -72,7 +57,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="Failed to load data."
-            android:textColor="@color/text_secondary"
+            android:textColor="@android:color/white"
             android:visibility="gone" />
     </FrameLayout>
 </LinearLayout>
