@@ -156,17 +156,12 @@ class ConfigActivity : Activity() {
                 return@setOnClickListener
             }
             
-            // Check if this is initial configuration or reconfiguration BEFORE saving
-            // Initial config = no existing configuration in SharedPreferences
-            val isInitialConfig = !Constants.isWidgetConfigured(this, appWidgetId)
-            
             val sharedPrefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
 
             // Clear logs before saving
             logs.clear()
             logs.append("=== SAVING CONFIGURATION ===\n")
             logs.append("Widget ID: $appWidgetId\n")
-            logs.append("Initial configuration: $isInitialConfig\n")
             logs.append("Tandoor URL: $tandoorUrl\n")
             logs.append("API Key: ***${apiKey.length} characters***\n\n")
             debugLogsTextView.text = logs.toString()
@@ -191,18 +186,13 @@ class ConfigActivity : Activity() {
 
             Toast.makeText(this, "Configuration saved! Widget updating...", Toast.LENGTH_SHORT).show()
             
-            // For initial configuration, we MUST call setResult and finish
-            // Otherwise Android thinks configuration failed and doesn't add the widget
-            if (isInitialConfig) {
-                appendLog("Completing initial configuration...")
-                val resultValue = Intent()
-                resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                setResult(RESULT_OK, resultValue)
-                finish()
-            } else {
-                // For reconfiguration, show logs and let user navigate away manually
-                appendLog("\nConfiguration complete. You can view logs above or tap Done.")
-            }
+            // Set result to OK so Android knows the widget is configured
+            // But DON'T call finish() - let user view logs and close manually with Done
+            val resultValue = Intent()
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+            setResult(RESULT_OK, resultValue)
+            
+            appendLog("\nConfiguration saved. View logs above, then tap Done when ready.")
         }
     }
     
