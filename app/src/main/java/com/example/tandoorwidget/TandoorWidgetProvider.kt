@@ -103,9 +103,10 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         if ("com.example.tandoorwidget.ACTION_WIDGET_ERROR" == action) {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             val errorMessage = intent.getStringExtra("error_message")
-            Log.e(TAG, "Widget $appWidgetId error: $errorMessage")
+            val errorType = intent.getStringExtra("error_type")
+            Log.e(TAG, "Widget $appWidgetId error: $errorMessage (type: $errorType)")
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                updateErrorView(context, appWidgetId, errorMessage)
+                updateErrorView(context, appWidgetId, errorMessage, errorType)
             }
         } else if ("com.example.tandoorwidget.ACTION_REFRESH_WIDGET" == action) {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
@@ -132,24 +133,26 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, views)
     }
 
-    private fun updateErrorView(context: Context, appWidgetId: Int, errorMessage: String?) {
-        Log.e(TAG, "Showing error view for widget $appWidgetId: $errorMessage")
+    private fun updateErrorView(context: Context, appWidgetId: Int, errorMessage: String?, errorType: String? = null) {
+        Log.e(TAG, "Showing error view for widget $appWidgetId: $errorMessage (type: $errorType)")
         sendLogBroadcast(context, appWidgetId, "ERROR: $errorMessage")
         
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
         views.setViewVisibility(R.id.error_view, View.VISIBLE)
         
-        // Provide context-specific error messages
-        val displayMessage = when {
-            errorMessage == null -> "Failed to load data.\n\nCheck debug logs in config screen."
-            errorMessage.contains("Missing configuration", ignoreCase = true) -> 
+        // Provide context-specific error messages based on error type
+        val displayMessage = when (errorType) {
+            WidgetErrorType.MISSING_CONFIGURATION.name -> 
                 "⚙️ Configuration needed\n\nTap title to configure"
-            errorMessage.contains("API Error", ignoreCase = true) -> 
-                "API Error\n\n$errorMessage\n\nCheck URL and API key"
-            errorMessage.contains("Exception", ignoreCase = true) -> 
-                "Connection Error\n\n$errorMessage\n\nCheck network and URL"
-            else -> "$errorMessage\n\nCheck debug logs"
+            WidgetErrorType.API_ERROR.name -> 
+                "API Error\n\n${errorMessage ?: "Unknown API error"}\n\nCheck URL and API key"
+            WidgetErrorType.NETWORK_ERROR.name -> 
+                "Connection Error\n\n${errorMessage ?: "Network unreachable"}\n\nCheck network and URL"
+            WidgetErrorType.PARSE_ERROR.name ->
+                "Parse Error\n\n${errorMessage ?: "Invalid response format"}\n\nCheck Tandoor version"
+            else -> 
+                "${errorMessage ?: "Unknown error"}\n\nCheck debug logs in config screen"
         }
         
         views.setTextViewText(R.id.error_view, displayMessage)

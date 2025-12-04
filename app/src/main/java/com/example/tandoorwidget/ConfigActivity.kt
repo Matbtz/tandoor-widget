@@ -172,26 +172,26 @@ class ConfigActivity : Activity() {
 
             val appWidgetManager = AppWidgetManager.getInstance(this)
             
-            // Ensure the widget manager knows about this widget
-            val provider = android.content.ComponentName(this, TandoorWidgetProvider::class.java)
-            val widgetIds = appWidgetManager.getAppWidgetIds(provider)
-            appendLog("Active widget IDs: ${widgetIds.joinToString()}")
-            
-            // Check if this is initial configuration (widget not yet added) or reconfiguration (widget exists)
-            val isInitialConfig = appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID && !widgetIds.contains(appWidgetId)
-            
             if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
                 appendLog("ERROR: Invalid widget ID")
                 Toast.makeText(this, "Error: Invalid widget ID", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
+            // Check if this is initial configuration or reconfiguration
+            // Initial config = no existing configuration in SharedPreferences
+            val existingUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", null)
+            val isInitialConfig = existingUrl == null
+            
             if (isInitialConfig) {
-                appendLog("Initial widget configuration - widget not yet added to home screen")
-                appendLog("Widget will be configured when added")
+                appendLog("Initial widget configuration detected (no existing config)")
             } else {
-                appendLog("Updating existing widget $appWidgetId...")
+                appendLog("Reconfiguring existing widget $appWidgetId")
             }
+            
+            val provider = android.content.ComponentName(this, TandoorWidgetProvider::class.java)
+            val widgetIds = appWidgetManager.getAppWidgetIds(provider)
+            appendLog("Active widget IDs: ${widgetIds.joinToString()}")
             
             // Always try to update the widget
             TandoorWidgetProvider().onUpdate(this, appWidgetManager, intArrayOf(appWidgetId))
