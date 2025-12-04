@@ -25,16 +25,13 @@
             android:fontFamily="sans-serif-medium"
             android:contentDescription="Meal Plan Widget" />
 
-        <Button
+        <ImageButton
             android:id="@+id/refresh_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="40dp"
-            android:minHeight="40dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="@drawable/circular_button_bg"
-            android:text="↻"
-            android:textSize="20sp"
-            android:textColor="@color/accent_primary"
+            android:src="@drawable/ic_refresh"
+            android:scaleType="centerInside"
             android:contentDescription="Refresh meal plan"
             android:padding="8dp" />
     </LinearLayout>
