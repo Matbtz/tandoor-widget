@@ -34,7 +34,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@android:drawable/ic_popup_sync"
-                android:background="@android:drawable/selectable_item_background_borderless"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Refresh"
                 android:padding="8dp"
                 android:scaleType="centerInside" />
