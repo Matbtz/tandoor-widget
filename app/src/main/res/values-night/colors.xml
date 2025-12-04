@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors - Modern Teal (Dark Mode) -->
+    <color name="primary">#FF2DD4BF</color>
+    <color name="primary_variant">#FF14B8A6</color>
+    <color name="on_primary">#FF042F2E</color>
+    
+    <!-- Secondary Colors - Warm Coral Accent (Dark Mode) -->
+    <color name="secondary">#FFFB923C</color>
+    <color name="secondary_variant">#FFF97316</color>
+    <color name="on_secondary">#FF431407</color>
+    
+    <!-- Background Colors (Dark Mode) -->
+    <color name="background">#FF0F172A</color>
+    <color name="surface">#FF1E293B</color>
+    <color name="on_background">#FFF1F5F9</color>
+    <color name="on_surface">#FFCBD5E1</color>
+    
+    <!-- Widget Specific Colors (Dark Mode) -->
+    <color name="widget_background">#E61E293B</color>
+    <color name="widget_header_text">#FFF8FAFC</color>
+    <color name="widget_day_text">#FF94A3B8</color>
+    
+    <!-- Meal Card Colors (Dark Mode) -->
+    <color name="meal_card_background">#FF134E4A</color>
+    <color name="meal_card_border">#FF0F766E</color>
+    <color name="meal_card_text">#FF99F6E4</color>
+    <color name="meal_card_multiday_background">#FF78350F</color>
+    <color name="meal_card_multiday_border">#FFD97706</color>
+    <color name="meal_card_multiday_text">#FFFEF3C7</color>
+    
+    <!-- Status Colors (Dark Mode) -->
+    <color name="error">#FFEF4444</color>
+    <color name="success">#FF22C55E</color>
+    
+    <!-- Utility Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="debug_log_background">#FF1E293B</color>
+    
+    <!-- Legacy color references (for backward compatibility) -->
+    <color name="purple_200">#FF2DD4BF</color>
+    <color name="purple_500">#FF2DD4BF</color>
+    <color name="purple_700">#FF14B8A6</color>
+    <color name="teal_200">#FF5EEAD4</color>
+    <color name="teal_700">#FF14B8A6</color>
+    <color name="sand_text">#FF94A3B8</color>
+    <color name="multiday_indicator">#FFFB923C</color>
+</resources>
