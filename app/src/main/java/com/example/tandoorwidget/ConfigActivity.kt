@@ -25,11 +25,11 @@ class ConfigActivity : Activity() {
             val widgetId = intent?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             if (widgetId == appWidgetId) {
                 when (intent?.action) {
-                    "com.example.tandoorwidget.ACTION_WIDGET_LOG" -> {
+                    Constants.ACTION_WIDGET_LOG -> {
                         val message = intent.getStringExtra("log_message") ?: ""
                         appendLog("[LOG] $message")
                     }
-                    "com.example.tandoorwidget.ACTION_WIDGET_ERROR" -> {
+                    Constants.ACTION_WIDGET_ERROR -> {
                         val message = intent.getStringExtra("error_message") ?: ""
                         appendLog("[ERROR] $message")
                     }
@@ -78,8 +78,8 @@ class ConfigActivity : Activity() {
         // Register broadcast receivers for logs
         try {
             val logFilter = IntentFilter().apply {
-                addAction("com.example.tandoorwidget.ACTION_WIDGET_LOG")
-                addAction("com.example.tandoorwidget.ACTION_WIDGET_ERROR")
+                addAction(Constants.ACTION_WIDGET_LOG)
+                addAction(Constants.ACTION_WIDGET_ERROR)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 registerReceiver(logReceiver, logFilter, Context.RECEIVER_NOT_EXPORTED)

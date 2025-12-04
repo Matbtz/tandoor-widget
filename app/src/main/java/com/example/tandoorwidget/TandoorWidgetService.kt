@@ -98,19 +98,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
             sendErrorBroadcast(errorMsg, WidgetErrorType.MISSING_CONFIGURATION)
             
             // Still initialize dates structure even without config, so getViewAt() doesn't fail
-            val calendar = Calendar.getInstance()
-            while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
-                calendar.add(Calendar.DATE, -1)
-            }
-            val dates = (0..6).map {
-                val date = sdf.format(calendar.time)
-                calendar.add(Calendar.DATE, 1)
-                date
-            }
-            dailyMeals.clear()
-            dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
-            updateFlattenedMeals()
-            
+            initializeEmptyWeekDates()
             return
         }
         
@@ -246,7 +234,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         // Log to Android logcat for debugging
         Log.d(TAG, message)
         // Send to ConfigActivity debug popup (not shown on widget UI)
-        val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
+        val intent = Intent(Constants.ACTION_WIDGET_LOG)
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         intent.putExtra("log_message", message)
         context.sendBroadcast(intent)
@@ -258,7 +246,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         throwable: Throwable? = null
     ) {
         Log.e(TAG, message, throwable)
-        val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_ERROR")
+        val intent = Intent(Constants.ACTION_WIDGET_ERROR)
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         intent.putExtra("error_message", message)
         intent.putExtra("error_type", errorType.name)
@@ -354,23 +342,22 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     private fun createEmptyDayView(): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_day_item)
         views.setTextViewText(R.id.day_of_week, "")
-        // Hide all recipe views
-        val recipeIds = listOf(R.id.recipe_1, R.id.recipe_2, R.id.recipe_3, R.id.recipe_4, R.id.recipe_5)
-        recipeIds.forEach { id ->
-            views.setViewVisibility(id, View.GONE)
-        }
+        hideAllRecipeViews(views)
         return views
     }
     
     private fun createErrorDayView(): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_day_item)
         views.setTextViewText(R.id.day_of_week, "Error")
-        // Hide all recipe views
+        hideAllRecipeViews(views)
+        return views
+    }
+    
+    private fun hideAllRecipeViews(views: RemoteViews) {
         val recipeIds = listOf(R.id.recipe_1, R.id.recipe_2, R.id.recipe_3, R.id.recipe_4, R.id.recipe_5)
         recipeIds.forEach { id ->
             views.setViewVisibility(id, View.GONE)
         }
-        return views
     }
 
     override fun getLoadingView(): RemoteViews? {
@@ -387,5 +374,20 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
 
     override fun hasStableIds(): Boolean {
         return true
+    }
+    
+    private fun initializeEmptyWeekDates() {
+        val calendar = Calendar.getInstance()
+        while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+            calendar.add(Calendar.DATE, -1)
+        }
+        val dates = (0..6).map {
+            val date = sdf.format(calendar.time)
+            calendar.add(Calendar.DATE, 1)
+            date
+        }
+        dailyMeals.clear()
+        dailyMeals.addAll(dates.map { date -> Pair(date, emptyList()) })
+        updateFlattenedMeals()
     }
 }

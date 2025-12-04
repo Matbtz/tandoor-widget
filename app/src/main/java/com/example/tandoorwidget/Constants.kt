@@ -6,6 +6,11 @@ import android.content.SharedPreferences
 object Constants {
     const val SHARED_PREFS_NAME = "TandoorWidgetPrefs"
     
+    // Broadcast action constants
+    const val ACTION_WIDGET_LOG = "com.example.tandoorwidget.ACTION_WIDGET_LOG"
+    const val ACTION_WIDGET_ERROR = "com.example.tandoorwidget.ACTION_WIDGET_ERROR"
+    const val ACTION_REFRESH_WIDGET = "com.example.tandoorwidget.ACTION_REFRESH_WIDGET"
+    
     /**
      * Check if widget configuration is complete
      */

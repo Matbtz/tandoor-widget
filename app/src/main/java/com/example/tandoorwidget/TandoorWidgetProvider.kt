@@ -64,7 +64,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         
         for (appWidgetId in appWidgetIds) {
             Log.d(TAG, "Widget $appWidgetId: $message")
-            val intent = Intent("com.example.tandoorwidget.ACTION_WIDGET_LOG")
+            val intent = Intent(Constants.ACTION_WIDGET_LOG)
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
             intent.putExtra("log_message", message)
             context.sendBroadcast(intent)
@@ -101,7 +101,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         val action = intent.action
         Log.d(TAG, "onReceive called with action: $action")
         
-        if ("com.example.tandoorwidget.ACTION_WIDGET_ERROR" == action) {
+        if (Constants.ACTION_WIDGET_ERROR == action) {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             val errorMessage = intent.getStringExtra("error_message")
             val errorType = intent.getStringExtra("error_type")
@@ -109,7 +109,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 updateErrorView(context, appWidgetId, errorMessage, errorType)
             }
-        } else if ("com.example.tandoorwidget.ACTION_REFRESH_WIDGET" == action) {
+        } else if (Constants.ACTION_REFRESH_WIDGET == action) {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             Log.d(TAG, "Refresh requested for widget $appWidgetId")
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
@@ -117,7 +117,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.calendar_view)
             }
-        } else if ("com.example.tandoorwidget.ACTION_WIDGET_LOG" == action) {
+        } else if (Constants.ACTION_WIDGET_LOG == action) {
             // Just pass through log messages - they're handled by ConfigActivity
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             val logMessage = intent.getStringExtra("log_message")
@@ -174,7 +174,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
 
             // Set up the refresh button
             val intent = Intent(context, TandoorWidgetProvider::class.java)
-            intent.action = "com.example.tandoorwidget.ACTION_REFRESH_WIDGET"
+            intent.action = Constants.ACTION_REFRESH_WIDGET
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
