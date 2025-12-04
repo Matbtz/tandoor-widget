@@ -99,7 +99,7 @@ jobs:
       - name: Determine tag name
         id: get_version
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_call" || -n "${{ inputs.tag_name }}" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_call" ]]; then
             echo "Workflow called from another workflow"
             TAG_NAME="${{ inputs.tag_name }}"
             echo "Using provided tag: $TAG_NAME"
