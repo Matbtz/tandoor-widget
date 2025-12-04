@@ -1,11 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#CC2d3436" /> <!-- Semi-transparent Dark Grey for Glass look -->
-    <corners android:radius="16dp" />
-    <padding
+<!-- Modern glassmorphism widget background with enhanced depth and visual effects -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base glassmorphic layer with gradient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="@color/widget_glass_background"
+                android:endColor="#B02D8B7A"
+                android:type="linear" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    
+    <!-- Subtle stroke/border for depth -->
+    <item>
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="1dp"
+                android:color="@color/widget_glass_stroke" />
+            <corners android:radius="20dp" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+    
+    <!-- Inner glow effect (subtle highlight at top) -->
+    <item android:top="1dp" android:left="1dp" android:right="1dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="#22FFFFFF"
+                android:centerColor="#00FFFFFF"
+                android:endColor="#00FFFFFF"
+                android:type="linear" />
+            <corners android:radius="19dp" />
+        </shape>
+    </item>
+    
+    <!-- Content padding layer -->
+    <item
         android:left="8dp"
         android:top="8dp"
         android:right="8dp"
-        android:bottom="8dp" />
-</shape>
+        android:bottom="8dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</layer-list>

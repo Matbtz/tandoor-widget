@@ -61,3 +61,12 @@ jobs:
           }
           
           echo "✓ Tag pushed successfully - release workflow will trigger automatically on push event"
+  
+  # Call release workflow directly to ensure build always runs
+  trigger-release:
+    name: Trigger Release Workflow
+    needs: create-tag
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    secrets: inherit
