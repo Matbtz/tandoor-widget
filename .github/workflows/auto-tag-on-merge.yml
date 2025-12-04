@@ -66,5 +66,7 @@ jobs:
   trigger-release:
     name: Trigger Release Workflow
     needs: create-tag
+    permissions:
+      contents: write
     uses: ./.github/workflows/release.yml
     secrets: inherit
