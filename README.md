@@ -33,43 +33,48 @@ You need to tell Gradle where your Android SDK is located. You can do this in on
 
 ## Debugging the Widget
 
-The widget includes comprehensive debugging features to help diagnose issues. For detailed troubleshooting, see [WIDGET_DEBUG_GUIDE.md](WIDGET_DEBUG_GUIDE.md).
-
-### Quick Debug Steps
-
-1. **Open the widget configuration** (long-press widget > Configure or tap widget title)
-2. **Check the Debug Logs section** at the bottom - it shows real-time events
-3. **Use "Test API" button** to verify your connection works
-4. **Click "Save"** and watch the logs to see what happens during widget update
+The widget includes comprehensive debugging features to help diagnose API connection issues.
 
 ### Debug Features
 
-1. **Debug Log Viewer**: The configuration activity includes a real-time log viewer that shows:
-   - Configuration being saved
-   - Widget update process (onUpdate, RemoteViews creation, data refresh)
+1. **Debug Log Viewer**: The configuration activity now includes a real-time log viewer that shows:
    - API request details (URL, query parameters, date range)
    - Response status codes and messages
    - Parsed meal plans with their dates
    - Date matching results
-   - Any errors or exceptions with specific causes
+   - Any errors or exceptions
 
-2. **Test API Button**: Use to verify your Tandoor URL and API key are correct before saving
+2. **Test API Button**: Use the "Test API" button in the configuration screen to:
+   - Verify your Tandoor URL and API key are correct
+   - Check if the API is reachable
+   - See what meal plans are returned for the current week
+   - Debug date parsing and matching issues
 
 3. **Android Logcat**: All debug information is also logged to Android's Logcat with these tags:
-   - `TandoorWidgetProvider` - Widget lifecycle and update events
-   - `TandoorWidget` - Widget service and data loading
+   - `TandoorWidget` - Widget service logs
    - `TandoorApiClient` - HTTP request/response details
+
+### How to Debug API Issues
+
+If you see "---" for meals even though you have planned meals:
+
+1. Open the widget configuration (long-press widget > Configure)
+2. Click the "Test API" button to verify:
+   - The API connection works
+   - The date range matches your planned meals
+   - Meal dates are being parsed correctly
+3. Click "Save" to refresh the widget and watch the debug logs
+4. Check the logs for:
+   - "Response code: 200" indicates successful API call
+   - "Received X meal plans" shows how many meals were returned
+   - "Parsed date" shows the date extracted from each meal
+   - "Matched date" or "No match" indicates if meals matched the week dates
 
 ### Common Issues
 
-If the widget shows an error message:
-
-- **"Configuration needed"**: No URL or API key saved. Tap widget title to configure.
-- **"API Error"**: Check your API key and URL in the config screen. Use "Test API" to diagnose.
-- **"Connection Error"**: Network issue or invalid URL. Check network and verify URL format.
-- **Empty dates with no meals**: Check Tandoor has meals planned for the current week (Saturday-Friday).
-
-For detailed troubleshooting steps and log examples, see [WIDGET_DEBUG_GUIDE.md](WIDGET_DEBUG_GUIDE.md).
+- **Wrong date format**: The API returns dates like `2025-12-01T00:00:00+02:00`. The widget extracts just the date part (`2025-12-01`) for matching.
+- **Date range mismatch**: The widget shows Saturday-Friday. Ensure your meals are planned within this range.
+- **API filtering**: Check if the Tandoor API is correctly filtering meals by the requested date range.
 
 ## CI/CD - Automatic Release
 
