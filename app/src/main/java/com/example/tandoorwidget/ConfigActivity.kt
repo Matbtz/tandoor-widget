@@ -151,12 +151,22 @@ class ConfigActivity : Activity() {
                 return@setOnClickListener
             }
 
+            if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+                Toast.makeText(this, "Error: Invalid widget ID", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            // Check if this is initial configuration or reconfiguration BEFORE saving
+            // Initial config = no existing configuration in SharedPreferences
+            val isInitialConfig = !Constants.isWidgetConfigured(this, appWidgetId)
+            
             val sharedPrefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
 
             // Clear logs before saving
             logs.clear()
             logs.append("=== SAVING CONFIGURATION ===\n")
             logs.append("Widget ID: $appWidgetId\n")
+            logs.append("Initial configuration: $isInitialConfig\n")
             logs.append("Tandoor URL: $tandoorUrl\n")
             logs.append("API Key: ***${apiKey.length} characters***\n\n")
             debugLogsTextView.text = logs.toString()
@@ -171,23 +181,6 @@ class ConfigActivity : Activity() {
             appendLog("Triggering widget update via onUpdate()...\n")
 
             val appWidgetManager = AppWidgetManager.getInstance(this)
-            
-            if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-                appendLog("ERROR: Invalid widget ID")
-                Toast.makeText(this, "Error: Invalid widget ID", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            
-            // Check if this is initial configuration or reconfiguration
-            // Initial config = no existing configuration in SharedPreferences
-            val existingUrl = sharedPrefs.getString("tandoor_url_$appWidgetId", null)
-            val isInitialConfig = existingUrl == null
-            
-            if (isInitialConfig) {
-                appendLog("Initial widget configuration detected (no existing config)")
-            } else {
-                appendLog("Reconfiguring existing widget $appWidgetId")
-            }
             
             val provider = android.content.ComponentName(this, TandoorWidgetProvider::class.java)
             val widgetIds = appWidgetManager.getAppWidgetIds(provider)

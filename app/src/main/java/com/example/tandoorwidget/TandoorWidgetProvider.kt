@@ -78,6 +78,13 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         views.setTextViewText(R.id.error_view, "⚙️ Configuration needed\n\nTap title to configure Tandoor URL and API key")
         
         // Set up config click on title
+        setupConfigClickIntent(context, views, appWidgetId)
+        
+        appWidgetManager.updateAppWidget(appWidgetId, views)
+        sendLogBroadcast(context, appWidgetId, "Showing 'Configuration needed' message")
+    }
+    
+    private fun setupConfigClickIntent(context: Context, views: RemoteViews, appWidgetId: Int) {
         val configIntent = Intent(context, ConfigActivity::class.java)
         configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         val configPendingIntent = PendingIntent.getActivity(
@@ -87,9 +94,6 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         views.setOnClickPendingIntent(R.id.widget_title, configPendingIntent)
-        
-        appWidgetManager.updateAppWidget(appWidgetId, views)
-        sendLogBroadcast(context, appWidgetId, "Showing 'Configuration needed' message")
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -181,15 +185,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.refresh_button, pendingIntent)
 
             // Set up config click on title
-            val configIntent = Intent(context, ConfigActivity::class.java)
-            configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-            val configPendingIntent = PendingIntent.getActivity(
-                context,
-                appWidgetId,
-                configIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.widget_title, configPendingIntent)
+            setupConfigClickIntent(context, views, appWidgetId)
 
             // Set up the remote adapter
             val serviceIntent = Intent(context, TandoorWidgetService::class.java)

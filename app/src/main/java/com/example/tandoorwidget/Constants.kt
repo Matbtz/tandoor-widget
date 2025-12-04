@@ -25,6 +25,18 @@ object Constants {
         val apiKey = sharedPrefs.getString("api_key_$appWidgetId", null)
         return Pair(tandoorUrl, apiKey)
     }
+    
+    /**
+     * Build a configuration error message based on what's missing
+     */
+    fun buildConfigErrorMessage(hasUrl: Boolean, hasApiKey: Boolean): String {
+        return when {
+            !hasUrl && !hasApiKey -> "Missing configuration - No URL or API key configured"
+            !hasUrl -> "Missing configuration - No Tandoor URL configured"
+            !hasApiKey -> "Missing configuration - No API key configured"
+            else -> "Configuration error"
+        }
+    }
 }
 
 enum class WidgetErrorType {

@@ -93,7 +93,7 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         
         if (!Constants.isWidgetConfigured(context, appWidgetId)) {
             val (url, key) = Constants.getWidgetConfig(context, appWidgetId)
-            val errorMsg = buildConfigErrorMessage(url != null, key != null)
+            val errorMsg = Constants.buildConfigErrorMessage(url != null, key != null)
             sendLogBroadcast(errorMsg)
             sendErrorBroadcast(errorMsg, WidgetErrorType.MISSING_CONFIGURATION)
             
@@ -264,15 +264,6 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
         intent.putExtra("error_type", errorType.name)
         context.sendBroadcast(intent)
     }
-    
-    private fun buildConfigErrorMessage(hasUrl: Boolean, hasApiKey: Boolean): String {
-        return when {
-            !hasUrl && !hasApiKey -> "Missing configuration - No URL or API key configured"
-            !hasUrl -> "Missing configuration - No Tandoor URL configured"
-            !hasApiKey -> "Missing configuration - No API key configured"
-            else -> "Configuration error"
-        }
-    }
 
     override fun onDestroy() {
         // Not needed for this implementation
@@ -361,12 +352,24 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
     }
     
     private fun createEmptyDayView(): RemoteViews {
-        return RemoteViews(context.packageName, R.layout.widget_day_item)
+        val views = RemoteViews(context.packageName, R.layout.widget_day_item)
+        views.setTextViewText(R.id.day_of_week, "")
+        // Hide all recipe views
+        val recipeIds = listOf(R.id.recipe_1, R.id.recipe_2, R.id.recipe_3, R.id.recipe_4, R.id.recipe_5)
+        recipeIds.forEach { id ->
+            views.setViewVisibility(id, View.GONE)
+        }
+        return views
     }
     
     private fun createErrorDayView(): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_day_item)
         views.setTextViewText(R.id.day_of_week, "Error")
+        // Hide all recipe views
+        val recipeIds = listOf(R.id.recipe_1, R.id.recipe_2, R.id.recipe_3, R.id.recipe_4, R.id.recipe_5)
+        recipeIds.forEach { id ->
+            views.setViewVisibility(id, View.GONE)
+        }
         return views
     }
 
