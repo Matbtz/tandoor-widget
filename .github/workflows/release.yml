@@ -6,6 +6,20 @@ on:
       - 'v*'
   workflow_dispatch:
   workflow_call:
+    inputs:
+      tag_name:
+        description: 'The tag name for the release'
+        required: true
+        type: string
+    secrets:
+      KEYSTORE_BASE64:
+        required: true
+      KEYSTORE_PASSWORD:
+        required: true
+      KEY_ALIAS:
+        required: true
+      KEY_PASSWORD:
+        required: true
 
 jobs:
   build:
@@ -85,7 +99,13 @@ jobs:
       - name: Determine tag name
         id: get_version
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+            echo "Workflow called from another workflow"
+            TAG_NAME="${{ inputs.tag_name }}"
+            echo "Using provided tag: $TAG_NAME"
+            echo "VERSION=$TAG_NAME" >> $GITHUB_OUTPUT
+            echo "TAG_EXISTS=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "Workflow triggered manually - extracting version from build.gradle"
             
             # Extract versionName from app/build.gradle (using awk for portability)
