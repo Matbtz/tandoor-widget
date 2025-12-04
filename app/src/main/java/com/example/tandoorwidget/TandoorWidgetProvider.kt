@@ -29,16 +29,16 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             if (!isConfigured) {
                 val (url, key) = Constants.getWidgetConfig(context, appWidgetId)
                 Log.w(TAG, "Widget $appWidgetId - Missing configuration (URL: ${url != null}, Key: ${key != null})")
-                sendLogBroadcast(context, appWidgetId, "Missing configuration - URL: ${url != null}, API Key: ${key != null}")
+                sendLogBroadcast(context, appWidgetId, message = "Missing configuration - URL: ${url != null}, API Key: ${key != null}")
                 
                 // Show a helpful message instead of opening config activity
                 updateConfigNeededView(context, appWidgetId)
             } else {
                 val (url, key) = Constants.getWidgetConfig(context, appWidgetId)
                 Log.d(TAG, "Widget $appWidgetId - Configuration found, updating widget")
-                sendLogBroadcast(context, appWidgetId, "Configuration found - updating widget...")
-                sendLogBroadcast(context, appWidgetId, "URL: $url")
-                sendLogBroadcast(context, appWidgetId, "API Key: ***${key?.length ?: 0} chars***")
+                sendLogBroadcast(context, appWidgetId, message = "Configuration found - updating widget...")
+                sendLogBroadcast(context, appWidgetId, message = "URL: $url")
+                sendLogBroadcast(context, appWidgetId, message = "API Key: ***${key?.length ?: 0} chars***")
                 updateAppWidget(context, appWidgetManager, appWidgetId)
             }
         }
@@ -81,7 +81,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         setupConfigClickIntent(context, views, appWidgetId)
         
         appWidgetManager.updateAppWidget(appWidgetId, views)
-        sendLogBroadcast(context, appWidgetId, "Showing 'Configuration needed' message")
+        sendLogBroadcast(context, appWidgetId, message = "Showing 'Configuration needed' message")
     }
     
     private fun setupConfigClickIntent(context: Context, views: RemoteViews, appWidgetId: Int) {
@@ -113,7 +113,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             Log.d(TAG, "Refresh requested for widget $appWidgetId")
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                sendLogBroadcast(context, appWidgetId, "Refresh button pressed - requesting data update...")
+                sendLogBroadcast(context, appWidgetId, message = "Refresh button pressed - requesting data update...")
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.calendar_view)
             }
@@ -136,7 +136,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
 
     private fun updateErrorView(context: Context, appWidgetId: Int, errorMessage: String?, errorType: String? = null) {
         Log.e(TAG, "Showing error view for widget $appWidgetId: $errorMessage (type: $errorType)")
-        sendLogBroadcast(context, appWidgetId, "ERROR: $errorMessage")
+        sendLogBroadcast(context, appWidgetId, message = "ERROR: $errorMessage")
         
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
@@ -166,7 +166,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         appWidgetId: Int
     ) {
         Log.d(TAG, "updateAppWidget called for widget $appWidgetId")
-        sendLogBroadcast(context, appWidgetId, "Building widget RemoteViews...")
+        sendLogBroadcast(context, appWidgetId, message = "Building widget RemoteViews...")
         
         try {
             val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
@@ -192,7 +192,7 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
             views.setRemoteAdapter(R.id.calendar_view, serviceIntent)
             
-            sendLogBroadcast(context, appWidgetId, "RemoteAdapter set to TandoorWidgetService")
+            sendLogBroadcast(context, appWidgetId, message = "RemoteAdapter set to TandoorWidgetService")
 
             // Set up PendingIntent template for clickable meal items
             // This template will be filled in by individual items in the RemoteViews
@@ -206,17 +206,17 @@ class TandoorWidgetProvider : AppWidgetProvider() {
             )
             views.setPendingIntentTemplate(R.id.calendar_view, clickPendingIntent)
 
-            sendLogBroadcast(context, appWidgetId, "Updating AppWidget with RemoteViews...")
+            sendLogBroadcast(context, appWidgetId, message = "Updating AppWidget with RemoteViews...")
             appWidgetManager.updateAppWidget(appWidgetId, views)
             
             // Trigger initial data load
-            sendLogBroadcast(context, appWidgetId, "Triggering data refresh (notifyAppWidgetViewDataChanged)...")
+            sendLogBroadcast(context, appWidgetId, message = "Triggering data refresh (notifyAppWidgetViewDataChanged)...")
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.calendar_view)
             
             Log.d(TAG, "Widget $appWidgetId updated successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to update widget $appWidgetId", e)
-            sendLogBroadcast(context, appWidgetId, "ERROR building widget: ${e.javaClass.simpleName} - ${e.message}")
+            sendLogBroadcast(context, appWidgetId, message = "ERROR building widget: ${e.javaClass.simpleName} - ${e.message}")
             updateErrorView(context, appWidgetId, "Failed to build widget: ${e.message}")
         }
     }
