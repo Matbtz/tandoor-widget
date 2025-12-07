@@ -25,6 +25,7 @@
         android:layout_height="wrap_content"
         android:text="View Recipe"
         android:textColor="@color/primary"
+        android:textSize="18sp"
         android:layout_marginBottom="12dp"
         android:paddingTop="12dp"
         android:paddingBottom="12dp" />
@@ -36,6 +37,7 @@
         android:layout_height="wrap_content"
         android:text="Edit Meal Plan"
         android:textColor="@color/primary"
+        android:textSize="18sp"
         android:layout_marginBottom="12dp"
         android:paddingTop="12dp"
         android:paddingBottom="12dp" />
@@ -46,6 +48,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Close"
+        android:textSize="16sp"
         android:textColor="@color/widget_day_text" />
 
 </LinearLayout>
