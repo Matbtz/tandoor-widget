@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
-    android:padding="4dp"
-    android:layout_marginBottom="2dp">
+    android:layout_height="wrap_content"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp"
+    android:paddingTop="2dp"
+    android:paddingBottom="6dp">
 
     <TextView
         android:id="@+id/day_of_week"
-        android:layout_width="72dp"
+        android:layout_width="56dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
         android:gravity="start|center_vertical"
-        android:textColor="@color/sand_text"
+        android:textColor="@color/widget_day_text"
         android:textStyle="bold"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
+        android:textAllCaps="true"
+        android:letterSpacing="0.05" />
 
     <LinearLayout
         android:id="@+id/recipes_container"
@@ -22,67 +27,134 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/day_of_week"
         android:layout_centerVertical="true"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/recipe_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:gravity="center_vertical"
-            android:textColor="@color/meal_card_text"
-            android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textSize="12sp"
-            android:visibility="gone" />
+        <!-- Changed to vertical to stack meals if multiple, or just list them.
+             Wait, original was horizontal. But vertical list is usually better for readability if names are long.
+             However, the widget space is limited.
+             Let's stick to horizontal but with better spacing, OR maybe vertical is better?
+             The plan says "Improve recipe text styling".
+             If I change to vertical, I need to make sure height is wrap_content and it doesn't take too much space.
+             But the prompt says "7-day meal plan is displayed as a vertical list". That refers to the days.
+             Inside a day, meals are usually Lunch/Dinner.
+             Horizontal is compact. Vertical is cleaner.
+             Let's try horizontal flow but with margins.
+             Wait, LinearLayout doesn't wrap content to next line.
+             If I have multiple meals, they are just placed next to each other.
+             Original code had horizontal. I will keep it horizontal but improve margins and text style.
+        -->
 
-        <TextView
-            android:id="@+id/recipe_2"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:gravity="center_vertical"
-            android:textColor="@color/meal_card_text"
-            android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textSize="12sp"
-            android:visibility="gone" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/recipe_3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:gravity="center_vertical"
-            android:textColor="@color/meal_card_text"
-            android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textSize="12sp"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/recipe_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/meal_card_text"
+                android:background="@drawable/meal_card_background"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="8dp"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif"
+                android:visibility="gone"
+                android:ellipsize="end"
+                android:maxLines="1" />
 
-        <TextView
-            android:id="@+id/recipe_4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:gravity="center_vertical"
-            android:textColor="@color/meal_card_text"
-            android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textSize="12sp"
-            android:visibility="gone" />
+             <!-- Only showing 1st recipe with weight 1 to take space if others are hidden.
+                  But if multiple are visible, weight 1 means equal width?
+                  If I want them to be size to fit, use wrap_content.
+                  If I want them to fill space, use weight.
+                  If there are 2 meals (Lunch/Dinner), equal width is good.
+                  If there are 5... that's too crowded.
+                  The previous code had 5 text views.
+                  I'll revert to wrap_content but keep weight to distribute space if needed, or just wrap.
+                  Let's use wrap_content with weight="1" so they share space equally.
+             -->
+            <TextView
+                android:id="@+id/recipe_2"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/meal_card_text"
+                android:background="@drawable/meal_card_background"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="8dp"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif"
+                android:visibility="gone"
+                android:ellipsize="end"
+                android:maxLines="1" />
 
-        <TextView
-            android:id="@+id/recipe_5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:gravity="center_vertical"
-            android:textColor="@color/meal_card_text"
-            android:background="@drawable/meal_card_background"
-            android:padding="6dp"
-            android:textSize="12sp"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/recipe_3"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/meal_card_text"
+                android:background="@drawable/meal_card_background"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="8dp"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif"
+                android:visibility="gone"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+            <!-- Reducing to 3 visible slots because 5 in a row is unreadable on mobile width with "modern" padding -->
+             <TextView
+                android:id="@+id/recipe_4"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/meal_card_text"
+                android:background="@drawable/meal_card_background"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="8dp"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif"
+                android:visibility="gone"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+             <TextView
+                android:id="@+id/recipe_5"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:gravity="center_vertical"
+                android:textColor="@color/meal_card_text"
+                android:background="@drawable/meal_card_background"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="8dp"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif"
+                android:visibility="gone"
+                android:ellipsize="end"
+                android:maxLines="1" />
+        </LinearLayout>
 
     </LinearLayout>
 
