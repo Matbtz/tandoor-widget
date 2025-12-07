@@ -2,10 +2,5 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="#CC2d3436" /> <!-- Semi-transparent Dark Grey for Glass look -->
-    <corners android:radius="16dp" />
-    <padding
-        android:left="8dp"
-        android:top="8dp"
-        android:right="8dp"
-        android:bottom="8dp" />
+    <corners android:radius="20dp" />
 </shape>

@@ -17,7 +17,7 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:paddingTop="4dp"
-            android:paddingBottom="4dp">
+            android:paddingBottom="12dp">
 
             <TextView
                 android:id="@+id/widget_title"
@@ -30,7 +30,6 @@
                 android:textColor="@color/widget_header_text"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:fontFamily="sans-serif-medium"
                 android:ellipsize="end"
                 android:maxLines="1" />
 
@@ -44,14 +43,8 @@
                 android:background="@drawable/meal_card_background"
                 android:contentDescription="Refresh"
                 android:padding="6dp"
-                android:scaleType="centerInside"
-                android:tint="@color/widget_header_text" />
+                android:scaleType="centerInside" />
         </RelativeLayout>
-
-        <!-- Divider (Transparent spacer instead of line for cleaner look) -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="8dp" />
 
         <!-- Calendar / list of day items (populated by RemoteViewsService) -->
         <ListView
