@@ -40,7 +40,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:src="@android:drawable/ic_popup_sync"
-                android:background="@drawable/meal_card_background"
+                android:background="@drawable/ripple_meal_card"
                 android:contentDescription="Refresh"
                 android:padding="6dp"
                 android:scaleType="centerInside" />

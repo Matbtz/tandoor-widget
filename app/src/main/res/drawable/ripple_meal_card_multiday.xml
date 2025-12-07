@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RemoteViews-compatible "ripple" (Selector) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@drawable/meal_card_multiday_bg_pressed" />
+    <item android:drawable="@drawable/meal_card_multiday_bg_normal" />
+</selector>
