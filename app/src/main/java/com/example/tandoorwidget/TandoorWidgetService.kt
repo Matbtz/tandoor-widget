@@ -257,9 +257,9 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 
                 // Use different background for multi-day meals
                 val background = if (MealPlanUtils.isMultiDayMeal(meal)) {
-                    R.drawable.meal_card_multiday_background
+                    R.drawable.ripple_meal_card_multiday
                 } else {
-                    R.drawable.meal_card_background
+                    R.drawable.ripple_meal_card
                 }
                 remoteViews.setInt(recipeId, "setBackgroundResource", background)
                 

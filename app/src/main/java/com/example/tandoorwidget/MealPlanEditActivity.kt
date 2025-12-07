@@ -58,10 +58,10 @@ class MealPlanEditActivity : Activity() {
         // Setup move to date spinner
         val moveToDateAdapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.spinner_item,
             dates.map { formatDateForDisplay(it) }
         )
-        moveToDateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        moveToDateAdapter.setDropDownViewResource(R.layout.spinner_item)
         moveToDateSpinner.adapter = moveToDateAdapter
         
         // Set current date as selected
@@ -74,10 +74,10 @@ class MealPlanEditActivity : Activity() {
         val extendDates = listOf("None (single day)") + dates.map { formatDateForDisplay(it) }
         val extendToDateAdapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.spinner_item,
             extendDates
         )
-        extendToDateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        extendToDateAdapter.setDropDownViewResource(R.layout.spinner_item)
         extendToDateSpinner.adapter = extendToDateAdapter
         
         // Set current to_date as selected if exists
