@@ -20,6 +20,7 @@
     <color name="widget_background">#F2FFFFFF</color>
     <color name="widget_header_text">#FF0F172A</color>
     <color name="widget_day_text">#FF475569</color>
+    <color name="day_text_high_contrast">#333333</color>
     
     <!-- Meal Card Colors -->
     <color name="meal_card_background">#CCF0FDFA</color>
