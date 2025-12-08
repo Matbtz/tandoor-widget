@@ -35,8 +35,8 @@
 
             <ImageButton
                 android:id="@+id/refresh_button"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:src="@android:drawable/ic_popup_sync"
