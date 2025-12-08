@@ -23,10 +23,10 @@
     <color name="day_text_high_contrast">#333333</color>
     
     <!-- Meal Card Colors -->
-    <color name="meal_card_background">#CCF0FDFA</color>
+    <color name="meal_card_background">#99F0FDFA</color>
     <color name="meal_card_border">#8099F6E4</color>
     <color name="meal_card_text">#FF134E4A</color>
-    <color name="meal_card_multiday_background">#CCFEF3C7</color>
+    <color name="meal_card_multiday_background">#99FEF3C7</color>
     <color name="meal_card_multiday_border">#80FCD34D</color>
     <color name="meal_card_multiday_text">#FF92400E</color>
     
