@@ -22,11 +22,11 @@
     <color name="widget_day_text">#FF475569</color>
     
     <!-- Meal Card Colors -->
-    <color name="meal_card_background">#FFF0FDFA</color>
-    <color name="meal_card_border">#FF99F6E4</color>
+    <color name="meal_card_background">#CCF0FDFA</color>
+    <color name="meal_card_border">#8099F6E4</color>
     <color name="meal_card_text">#FF134E4A</color>
-    <color name="meal_card_multiday_background">#FFFEF3C7</color>
-    <color name="meal_card_multiday_border">#FFFCD34D</color>
+    <color name="meal_card_multiday_background">#CCFEF3C7</color>
+    <color name="meal_card_multiday_border">#80FCD34D</color>
     <color name="meal_card_multiday_text">#FF92400E</color>
     
     <!-- Status Colors -->

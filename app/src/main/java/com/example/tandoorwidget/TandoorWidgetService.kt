@@ -255,13 +255,22 @@ class TandoorWidgetRemoteViewsFactory(private val context: Context, private val 
                 remoteViews.setTextViewText(recipeId, truncatedName)
                 remoteViews.setViewVisibility(recipeId, View.VISIBLE)
                 
-                // Use different background for multi-day meals
-                val background = if (MealPlanUtils.isMultiDayMeal(meal)) {
+                // Use different background and text color for multi-day meals
+                val isMultiDay = MealPlanUtils.isMultiDayMeal(meal)
+                val background = if (isMultiDay) {
                     R.drawable.ripple_meal_card_multiday
                 } else {
                     R.drawable.ripple_meal_card
                 }
                 remoteViews.setInt(recipeId, "setBackgroundResource", background)
+
+                // Set text color based on meal type (teal for single, dark orange for multi-day)
+                val textColor = if (isMultiDay) {
+                    context.resources.getColor(R.color.meal_card_multiday_text, null)
+                } else {
+                    context.resources.getColor(R.color.meal_card_text, null)
+                }
+                remoteViews.setTextColor(recipeId, textColor)
                 
                 // Set up click intent with recipe URL and meal plan details
                 try {
