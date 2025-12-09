@@ -50,6 +50,7 @@ class ConfigActivity : Activity() {
         val clearLogsButton = findViewById<Button>(R.id.clear_logs_button)
         val copyLogsButton = findViewById<Button>(R.id.copy_logs_button)
         val doneButton = findViewById<Button>(R.id.done_button)
+        val themeButton = findViewById<Button>(R.id.theme_button)
 
         appWidgetId = intent?.extras?.getInt(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
@@ -167,6 +168,51 @@ class ConfigActivity : Activity() {
             // Note: We don't finish() here anymore to allow viewing logs
             // The user can press back or home button when done viewing logs
         }
+
+        themeButton.setOnClickListener {
+            showThemeDialog()
+        }
+    }
+
+    private fun showThemeDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_theme_config, null)
+        val opacitySlider = dialogView.findViewById<android.widget.SeekBar>(R.id.opacity_slider)
+        val opacityLabel = dialogView.findViewById<TextView>(R.id.opacity_label_value)
+
+        val sharedPrefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+
+        // Default opacity 255 (fully opaque image, but the image itself has alpha)
+        // Wait, the image `widget_background.xml` has ~70% opacity built-in.
+        // We want to control the ImageView alpha.
+        // Default to 255 (1.0) means "use the drawable as is".
+        // 0 means invisible.
+        var currentOpacity = sharedPrefs.getInt("theme_opacity_$appWidgetId", 255)
+
+        opacitySlider.max = 255
+        opacitySlider.progress = currentOpacity
+        opacityLabel.text = "${(currentOpacity * 100 / 255)}%"
+
+        opacitySlider.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                currentOpacity = progress
+                opacityLabel.text = "${(progress * 100 / 255)}%"
+            }
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+        })
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Theme Settings")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                sharedPrefs.edit().putInt("theme_opacity_$appWidgetId", currentOpacity).apply()
+                // Update widget
+                val appWidgetManager = AppWidgetManager.getInstance(this)
+                TandoorWidgetProvider().onUpdate(this, appWidgetManager, intArrayOf(appWidgetId))
+                Toast.makeText(this, "Theme updated!", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
     
     private fun appendLog(message: String) {

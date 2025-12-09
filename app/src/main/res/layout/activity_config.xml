@@ -67,6 +67,15 @@
             android:backgroundTint="@color/primary" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/theme_button"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Customize Theme (Blur/Colors)"
+        android:textColor="@color/primary"
+        android:layout_marginTop="16dp" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"

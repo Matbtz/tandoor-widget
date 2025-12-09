@@ -90,6 +90,11 @@ class TandoorWidgetProvider : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, R.layout.tandoor_widget)
         views.setViewVisibility(R.id.error_view, View.GONE)
 
+        // Apply theme settings
+        val sharedPrefs = context.getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        val opacity = sharedPrefs.getInt("theme_opacity_$appWidgetId", 255)
+        views.setInt(R.id.widget_background_image, "setImageAlpha", opacity)
+
         // Set up the refresh button
         val intent = Intent(context, TandoorWidgetProvider::class.java)
         intent.action = "com.example.tandoorwidget.ACTION_REFRESH_WIDGET"
