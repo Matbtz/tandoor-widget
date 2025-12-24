@@ -12,8 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    outputs:
-      tag_name: ${{ steps.generate_tag.outputs.tag_name }}
     
     steps:
       - name: Checkout code
@@ -63,18 +61,3 @@ jobs:
           }
           
           echo "✓ Tag pushed successfully - release workflow will trigger automatically on push event"
-  
-  # Call release workflow directly to ensure build always runs
-  trigger-release:
-    name: Trigger Release Workflow
-    needs: create-tag
-    permissions:
-      contents: write
-    uses: ./.github/workflows/release.yml
-    with:
-      tag_name: ${{ needs.create-tag.outputs.tag_name }}
-    secrets:
-      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
