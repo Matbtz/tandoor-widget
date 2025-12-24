@@ -11,3 +11,4 @@ local.properties
 
 # Gradle wrapper jar should always be committed
 # !gradle/wrapper/gradle-wrapper.jar
+app/build/
