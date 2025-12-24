@@ -12,7 +12,7 @@
         android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:gravity="start|center_vertical"
-        android:textColor="@color/sand_text"
+        android:textColor="@color/widget_primary"
         android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
