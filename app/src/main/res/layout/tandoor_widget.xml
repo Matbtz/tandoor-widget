@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Tandoor Meal Plan"
-            android:textColor="@android:color/white"
+            android:textColor="@color/widget_on_surface"
             android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
         <ImageButton
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_rotate"
-            android:tint="@android:color/white" />
+            android:tint="@color/widget_primary" />
     </LinearLayout>
 
     <TextView
@@ -57,7 +57,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="Failed to load data."
-            android:textColor="@android:color/white"
+            android:textColor="@color/widget_on_surface"
             android:visibility="gone" />
     </FrameLayout>
 </LinearLayout>
