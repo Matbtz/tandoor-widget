@@ -417,29 +417,29 @@ class MealPlanUtilsTest {
     @Test
     fun formatDateRangeSpan_withValidDates_returnsFormattedRange() {
         // Given
-        val fromDate = "2025-12-07"  // Saturday
-        val toDate = "2025-12-09"    // Monday
+        val fromDate = "2025-12-07"  // Sunday
+        val toDate = "2025-12-09"    // Tuesday
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
         // When
         val result = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, inputFormat)
 
         // Then
-        assertEquals("Sat-Mon", result)
+        assertEquals("Sun-Tue", result)
     }
 
     @Test
     fun formatDateRangeSpan_withSameDayRange_returnsFormattedRange() {
         // Given
-        val fromDate = "2025-12-07"  // Saturday
-        val toDate = "2025-12-07"    // Same Saturday
+        val fromDate = "2025-12-07"  // Sunday
+        val toDate = "2025-12-07"    // Same Sunday
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
         // When
         val result = MealPlanUtils.formatDateRangeSpan(fromDate, toDate, inputFormat)
 
         // Then
-        assertEquals("Sat-Sat", result)
+        assertEquals("Sun-Sun", result)
     }
 
     @Test

@@ -17,14 +17,6 @@
         <item name="android:statusBarColor" tools:targetApi="l">@color/primary_variant</item>
     </style>
     
-    <!-- Dialog theme for popup activities -->
-    <style name="Theme.TandoorWidget.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/on_surface</item>
-    </style>
-
     <!-- Dialog theme for popup activities (Added from Developp but using master palette) -->
     <style name="Theme.TandoorWidget.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
         <item name="colorPrimary">@color/widget_primary</item>

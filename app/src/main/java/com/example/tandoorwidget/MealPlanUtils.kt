@@ -10,6 +10,25 @@ import java.util.Locale
 object MealPlanUtils {
     private const val TAG = "MealPlanUtils"
 
+    // Helper method to safely log debugging information.
+    // In unit tests, Log.d/w/e throws RuntimeException because Android classes are not mocked.
+    private fun logDebug(tag: String, msg: String) {
+        try { Log.d(tag, msg) } catch (_: RuntimeException) { println("DEBUG: $tag: $msg") }
+    }
+
+    private fun logWarning(tag: String, msg: String) {
+        try { Log.w(tag, msg) } catch (_: RuntimeException) { println("WARN: $tag: $msg") }
+    }
+
+    private fun logError(tag: String, msg: String, tr: Throwable? = null) {
+        try {
+            if (tr != null) Log.e(tag, msg, tr) else Log.e(tag, msg)
+        } catch (_: RuntimeException) {
+            println("ERROR: $tag: $msg")
+            tr?.printStackTrace()
+        }
+    }
+
     /**
      * Get the display name for a meal plan entry.
      * If recipe is null (placeholder entry), returns the title.
@@ -23,7 +42,7 @@ object MealPlanUtils {
         return if (recipe != null) {
             recipe.name
         } else {
-            Log.d(TAG, "Placeholder entry detected (recipe == null), using title: '$title'")
+            logDebug(TAG, "Placeholder entry detected (recipe == null), using title: '$title'")
             title
         }
     }
@@ -40,7 +59,7 @@ object MealPlanUtils {
             recipe.id
         } else {
             if (recipe == null) {
-                Log.d(TAG, "Placeholder entry (recipe == null), no URL available")
+                logDebug(TAG, "Placeholder entry (recipe == null), no URL available")
             }
             null
         }
@@ -62,7 +81,7 @@ object MealPlanUtils {
             val baseUrl = tandoorUrl.trimEnd('/')
             "$baseUrl/recipe/$recipeId/"
         } else {
-            Log.d(TAG, "No valid recipe ID, returning base URL")
+            logDebug(TAG, "No valid recipe ID, returning base URL")
             tandoorUrl
         }
     }
@@ -79,11 +98,11 @@ object MealPlanUtils {
             if (rawDate.length >= 10) {
                 rawDate.substring(0, 10)
             } else {
-                Log.w(TAG, "Date string too short: '$rawDate'")
+                logWarning(TAG, "Date string too short: '$rawDate'")
                 rawDate
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to parse date: '$rawDate'", e)
+            logError(TAG, "Failed to parse date: '$rawDate'", e)
             rawDate
         }
     }
@@ -107,11 +126,11 @@ object MealPlanUtils {
             if (parsedDate != null) {
                 outputFormat.format(parsedDate)
             } else {
-                Log.e(TAG, "Failed to parse date: $dateString")
+                logError(TAG, "Failed to parse date: $dateString")
                 dateString
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception parsing date: $dateString", e)
+            logError(TAG, "Exception parsing date: $dateString", e)
             dateString
         }
     }
@@ -143,7 +162,7 @@ object MealPlanUtils {
                 ""
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception formatting date range span: $fromDate to $toDate", e)
+            logError(TAG, "Exception formatting date range span: $fromDate to $toDate", e)
             ""
         }
     }
@@ -188,7 +207,7 @@ object MealPlanUtils {
                 1
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to calculate meal span days", e)
+            logError(TAG, "Failed to calculate meal span days", e)
             1
         }
     }
@@ -224,7 +243,7 @@ object MealPlanUtils {
                 date >= fromDate && date <= toDate
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to check if meal applies to date", e)
+            logError(TAG, "Failed to check if meal applies to date", e)
             // Fallback to simple string comparison
             date >= fromDate && date <= toDate
         }
