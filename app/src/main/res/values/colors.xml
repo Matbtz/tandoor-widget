@@ -35,12 +35,35 @@
     
     <!-- Existing meal card colors (modernized) -->
     <color name="debug_log_background">#F8F6F3</color>
-    <color name="meal_card_background">#FAF0E6</color>
+    <color name="meal_card_background">@color/widget_background</color>
     <color name="meal_card_border">#D4C5B9</color>
     <color name="sand_text">#C2B280</color>
     <color name="multiday_indicator">#E07A5F</color>
     
-    <!-- Widget glassmorphism effects -->
+    <!-- Widget glassmorphism effects (Legacy) -->
     <color name="widget_glass_background">#CC2D8B7A</color>
     <color name="widget_glass_stroke">#33FFFFFF</color>
+
+    <!-- Compatibility aliases for Developp layout -->
+    <color name="primary">@color/widget_primary</color>
+    <color name="primary_variant">@color/widget_primary_variant</color>
+    <color name="on_primary">@color/widget_on_primary</color>
+    <color name="secondary">@color/widget_secondary</color>
+    <color name="secondary_variant">@color/widget_secondary_variant</color>
+    <color name="on_secondary">@color/widget_on_secondary</color>
+    <color name="background">@color/widget_surface</color>
+    <color name="surface">@color/widget_background</color>
+    <color name="on_background">@color/widget_on_surface</color>
+    <color name="on_surface">@color/widget_on_surface</color>
+
+    <color name="widget_header_text">@color/widget_on_surface</color>
+    <color name="widget_day_text">@color/widget_on_surface_variant</color>
+    <color name="day_text_high_contrast">@color/widget_on_surface</color>
+
+    <color name="meal_card_text">@color/widget_on_surface</color>
+    <color name="meal_card_multiday_text">@color/widget_on_surface</color>
+    <color name="meal_card_multiday_border">@color/multiday_indicator</color>
+
+    <color name="error">#FFDC2626</color>
+    <color name="success">#FF16A34A</color>
 </resources>

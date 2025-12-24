@@ -38,4 +38,27 @@
     <!-- Widget glassmorphism effects for dark mode -->
     <color name="widget_glass_background">#CC1E3A34</color>
     <color name="widget_glass_stroke">#33FFFFFF</color>
+
+    <!-- Compatibility aliases for Developp layout -->
+    <color name="primary">@color/widget_primary</color>
+    <color name="primary_variant">@color/widget_primary_variant</color>
+    <color name="on_primary">@color/widget_on_primary</color>
+    <color name="secondary">@color/widget_secondary</color>
+    <color name="secondary_variant">@color/widget_secondary_variant</color>
+    <color name="on_secondary">@color/widget_on_secondary</color>
+    <color name="background">@color/widget_surface</color>
+    <color name="surface">@color/widget_background</color>
+    <color name="on_background">@color/widget_on_surface</color>
+    <color name="on_surface">@color/widget_on_surface</color>
+
+    <color name="widget_header_text">@color/widget_on_surface</color>
+    <color name="widget_day_text">@color/widget_on_surface_variant</color>
+    <color name="day_text_high_contrast">@color/widget_on_surface</color>
+
+    <color name="meal_card_text">@color/widget_on_surface</color>
+    <color name="meal_card_multiday_text">@color/widget_on_surface</color>
+    <color name="meal_card_multiday_border">@color/multiday_indicator</color>
+
+    <color name="error">#FFEF4444</color>
+    <color name="success">#FF22C55E</color>
 </resources>

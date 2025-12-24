@@ -1,63 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_background"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="12dp"
+    android:background="@drawable/widget_background">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/widget_title"
-            android:layout_width="0dp"
+        <!-- Header: title + refresh -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Tandoor Meal Plan"
-            android:textColor="@color/widget_on_surface"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="12dp">
 
-        <ImageButton
-            android:id="@+id/refresh_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_rotate"
-            android:tint="@color/widget_primary" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/refresh_button"
+                android:text="Tandoor"
+                android:textColor="@color/widget_header_text"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1" />
 
-    <TextView
-        android:id="@+id/debug_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Ready"
-        android:textColor="#FF8888"
-        android:textSize="10sp"
-        android:visibility="visible" />
+            <ImageButton
+                android:id="@+id/refresh_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@android:drawable/ic_popup_sync"
+                android:background="@drawable/widget_refresh_bg"
+                android:contentDescription="Refresh"
+                android:padding="12dp"
+                android:scaleType="centerInside" />
+        </RelativeLayout>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <!-- Changed numColumns to 1 for a vertical list (planner view) -->
-        <GridView
+        <!-- Calendar / list of day items (populated by RemoteViewsService) -->
+        <ListView
             android:id="@+id/calendar_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:numColumns="1" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@null"
+            android:dividerHeight="4dp"
+            android:transcriptMode="disabled"
+            android:scrollbars="vertical" />
 
+        <!-- Debug / error view -->
         <TextView
             android:id="@+id/error_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="Failed to load data."
-            android:textColor="@color/widget_on_surface"
-            android:visibility="gone" />
-    </FrameLayout>
-</LinearLayout>
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:textColor="@color/error"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:textSize="12sp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/debug_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:textColor="@color/widget_day_text"
+            android:textSize="10sp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+
+    </LinearLayout>
+
+</FrameLayout>
