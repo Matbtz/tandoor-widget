@@ -1,66 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Dark Mode Color Palette -->
-    
+
     <!-- Base colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
+
     <!-- Modern Widget Color Palette - Dark Mode -->
     <!-- Primary: Brighter teal/green for dark backgrounds -->
     <color name="widget_primary">#4FA794</color>
     <color name="widget_primary_variant">#6BBFAD</color>
     <color name="widget_primary_light">#2D8B7A</color>
-    
+
     <!-- Secondary: Softer coral for dark backgrounds -->
     <color name="widget_secondary">#E89880</color>
     <color name="widget_secondary_variant">#F0B5A3</color>
     <color name="widget_secondary_light">#E07A5F</color>
-    
+
     <!-- Surface colors: Dark backgrounds -->
     <color name="widget_surface">#1E1E1E</color>
     <color name="widget_surface_variant">#2A2A2A</color>
     <color name="widget_background">#121212</color>
-    
+
     <!-- Text colors: Light for dark backgrounds -->
     <color name="widget_on_surface">#E8E8E8</color>
     <color name="widget_on_surface_variant">#B8B8B8</color>
     <color name="widget_on_primary">#000000</color>
     <color name="widget_on_secondary">#000000</color>
-    
+
     <!-- Dark mode meal card colors -->
     <color name="debug_log_background">#2A2A2A</color>
     <color name="meal_card_background">#2A2520</color>
     <color name="meal_card_border">#4A453F</color>
     <color name="sand_text">#A89968</color>
     <color name="multiday_indicator">#E89880</color>
-    
+
     <!-- Widget glassmorphism effects for dark mode -->
     <color name="widget_glass_background">#CC1E3A34</color>
     <color name="widget_glass_stroke">#33FFFFFF</color>
-
-    <!-- Compatibility Aliases for Developp Branch Logic (Dark Mode) -->
-    <color name="primary">@color/widget_primary</color>
-    <color name="primary_variant">@color/widget_primary_variant</color>
-    <color name="on_primary">@color/widget_on_primary</color>
-    <color name="secondary">@color/widget_secondary</color>
-    <color name="secondary_variant">@color/widget_secondary_variant</color>
-    <color name="on_secondary">@color/widget_on_secondary</color>
-    <color name="background">@color/widget_background</color>
-    <color name="surface">@color/widget_surface</color>
-    <color name="on_background">@color/widget_on_surface</color>
-    <color name="on_surface">@color/widget_on_surface</color>
-
-    <!-- Missing colors required by Developp logic, mapped to master design -->
-    <color name="error">#FFEF4444</color>
-    <color name="success">#FF22C55E</color>
-
-    <color name="meal_card_text">@color/widget_on_surface</color>
-    <color name="meal_card_multiday_text">@color/multiday_indicator</color>
-    <color name="meal_card_multiday_background">@color/meal_card_background</color>
-    <color name="meal_card_multiday_border">@color/multiday_indicator</color>
-
-    <color name="widget_header_text">@color/widget_on_surface</color>
-    <color name="widget_day_text">@color/widget_on_surface_variant</color>
-    <color name="day_text_high_contrast">@color/widget_on_surface</color>
 </resources>
