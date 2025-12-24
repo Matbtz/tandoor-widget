@@ -43,4 +43,30 @@
     <!-- Widget glassmorphism effects -->
     <color name="widget_glass_background">#CC2D8B7A</color>
     <color name="widget_glass_stroke">#33FFFFFF</color>
+
+    <!-- Compatibility Aliases for Developp Branch Logic -->
+    <color name="primary">@color/widget_primary</color>
+    <color name="primary_variant">@color/widget_primary_variant</color>
+    <color name="on_primary">@color/widget_on_primary</color>
+    <color name="secondary">@color/widget_secondary</color>
+    <color name="secondary_variant">@color/widget_secondary_variant</color>
+    <color name="on_secondary">@color/widget_on_secondary</color>
+    <color name="background">@color/widget_background</color>
+    <color name="surface">@color/widget_surface</color>
+    <color name="on_background">@color/widget_on_surface</color>
+    <color name="on_surface">@color/widget_on_surface</color>
+
+    <!-- Missing colors required by Developp logic, mapped to master design -->
+    <color name="error">#FFDC2626</color>
+    <color name="success">#FF16A34A</color>
+
+    <color name="meal_card_text">@color/widget_on_surface</color>
+    <color name="meal_card_multiday_text">@color/multiday_indicator</color>
+    <color name="meal_card_multiday_background">@color/meal_card_background</color>
+    <color name="meal_card_multiday_border">@color/multiday_indicator</color>
+
+    <color name="widget_header_text">@color/widget_on_surface</color>
+    <color name="widget_day_text">@color/widget_on_surface_variant</color>
+    <color name="day_text_high_contrast">@color/widget_on_surface</color>
+
 </resources>
